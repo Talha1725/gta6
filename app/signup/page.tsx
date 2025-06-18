@@ -1,8 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { authService } from '@/lib/services'
+import { validationUtils } from '@/lib/utils/validation'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -17,38 +18,42 @@ export default function SignupPage() {
     setLoading(true)
     setError('')
 
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
+    // Validate email
+    const emailError = validationUtils.email.getError(email.trim())
+    if (emailError) {
+      setError(emailError)
+      setLoading(false)
+      return
+    }
+
+    // Validate password
+    const passwordError = validationUtils.password.getError(password)
+    if (passwordError) {
+      setError(passwordError)
+      setLoading(false)
+      return
+    }
+
+    // Validate password confirmation
+    const confirmPasswordError = validationUtils.confirmPassword.getError(password, confirmPassword)
+    if (confirmPasswordError) {
+      setError(confirmPasswordError)
       setLoading(false)
       return
     }
 
     try {
-      // Call your signup API endpoint
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed')
-      }
-
-      // Sign in the user after successful signup
-      const result = await signIn('credentials', {
-        email,
+      const result = await authService.signup({
+        email: email.trim(),
         password,
-        redirect: false,
+        confirmPassword
       })
 
-      if (result?.error) {
-        setError('Failed to sign in after signup')
+      if (!result.success) {
+        setError(result.error || 'Signup failed')
       } else {
-        router.replace('/')
+        // Redirect to login page after successful signup
+        router.replace('/login?message=Account created successfully! Please sign in.')
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')

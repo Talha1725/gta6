@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Preorder } from "@/types";
+import { preorderService } from "@/lib/services";
+import { formattingUtils } from "@/lib/utils/formatting";
 
 // Simple countdown component (if CountdownTimer doesn't exist)
 const SimpleCountdown = ({ targetDate }: { targetDate: string | null }) => {
@@ -19,29 +21,18 @@ const SimpleCountdown = ({ targetDate }: { targetDate: string | null }) => {
     if (!targetDate) return;
 
     const timer = setInterval(() => {
-      const now = new Date();
-      const target = new Date(targetDate);
-      const difference = target.getTime() - now.getTime();
-
-      if (difference <= 0) {
-        setTimeLeft({ days: "00", hours: "00", minutes: "00", seconds: "00" });
-        clearInterval(timer);
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
+      const countdown = formattingUtils.time.formatCountdown(targetDate);
+      
       setTimeLeft({
-        days: days.toString().padStart(2, "0"),
-        hours: hours.toString().padStart(2, "0"),
-        minutes: minutes.toString().padStart(2, "0"),
-        seconds: seconds.toString().padStart(2, "0"),
+        days: countdown.days.toString().padStart(2, "0"),
+        hours: countdown.hours.toString().padStart(2, "0"),
+        minutes: countdown.minutes.toString().padStart(2, "0"),
+        seconds: countdown.seconds.toString().padStart(2, "0"),
       });
+      
+      if (countdown.isExpired) {
+        clearInterval(timer);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
@@ -89,14 +80,8 @@ export default function AdminDashboard() {
   const fetchPreorders = async () => {
     try {
       setError(null);
-      const response = await fetch("/api/admin/preorders");
-      const data = await response.json();
-
-      if (data.success) {
-        setPreorders(data.data || []);
-      } else {
-        setError(data.error || "Failed to fetch preorders");
-      }
+      const preordersData = await preorderService.getAllPreorders();
+      setPreorders(preordersData);
     } catch (error) {
       console.error("Error fetching preorders:", error);
       setError("Network error while fetching preorders");
@@ -116,32 +101,13 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, [session]);
 
-  // Format date for display
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "No date set";
-
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch (error) {
-      return "Invalid date";
-    }
-  };
-
   // Calculate days until release
   const getDaysUntilRelease = (releaseDate: string | null) => {
     if (!releaseDate) return null;
 
     try {
-      const release = new Date(releaseDate);
-      const now = new Date();
-      const diffTime = release.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
+      const countdown = formattingUtils.time.formatCountdown(releaseDate);
+      return countdown.isExpired ? 0 : countdown.days;
     } catch (error) {
       return null;
     }
@@ -198,123 +164,89 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="p-6">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-                <p className="text-gray-500">Loading preorders...</p>
-              </div>
-            ) : preorders.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">⏰</div>
-                <p className="text-gray-500 mb-2 text-lg">
-                  No preorder countdowns active
-                </p>
-                <p className="text-sm text-gray-400">
-                  Create a new preorder to start a countdown timer
-                </p>
+          <div className="divide-y divide-gray-200">
+            {preorders.length === 0 ? (
+              <div className="px-6 py-8 text-center text-gray-500">
+                {loading ? "Loading preorders..." : "No preorders found"}
               </div>
             ) : (
-              <div className="space-y-6">
-                {preorders.map((preorder) => (
+              preorders.map((preorder) => {
+                const daysUntilRelease = getDaysUntilRelease(preorder.releaseDate);
+                const isExpired = daysUntilRelease !== null && daysUntilRelease <= 0;
+
+                return (
                   <div
                     key={preorder.id}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className={`px-6 py-4 ${
+                      isExpired ? "bg-red-50" : "hover:bg-gray-50"
+                    }`}
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-                      {/* Preorder Info */}
-                      <div className="lg:col-span-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h3 className="font-semibold text-lg text-gray-900">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
                             Preorder #{preorder.id}
                           </h3>
+                          {isExpired && (
+                            <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                              EXPIRED
+                            </span>
+                          )}
                         </div>
 
-                        {preorder.selectedDate && (
-                          <p className="text-sm text-cyan-600 mb-2">
-                            🎯 <strong>Release Date:</strong>{" "}
-                            {formatDate(preorder.selectedDate)}
-                          </p>
-                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                          <div>
+                            <span className="font-medium">Created:</span>{" "}
+                            {formattingUtils.date.formatLong(preorder.createdAt)}
+                          </div>
+                          <div>
+                            <span className="font-medium">Selected Date:</span>{" "}
+                            {preorder.selectedDate
+                              ? formattingUtils.date.formatLong(preorder.selectedDate)
+                              : "Not set"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Release Date:</span>{" "}
+                            {preorder.releaseDate
+                              ? formattingUtils.date.formatLong(preorder.releaseDate)
+                              : "Not set"}
+                          </div>
+                        </div>
 
                         {preorder.notes && (
-                          <p className="text-sm text-gray-600 mb-2">
-                            📝 <strong>Notes:</strong> {preorder.notes}
-                          </p>
+                          <div className="mt-2">
+                            <span className="font-medium text-gray-600">Notes:</span>{" "}
+                            <span className="text-gray-700">{preorder.notes}</span>
+                          </div>
                         )}
 
-                        <p className="text-xs text-gray-500">
-                          <strong>Created:</strong>{" "}
-                          {new Date(preorder.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </p>
-                      </div>
-
-                      {/* Countdown Timer */}
-                      <div className="lg:col-span-2 flex justify-center lg:justify-end">
-                        <div className="bg-gradient-to-r from-cyan-50 to-purple-50 rounded-lg p-4 w-full max-w-md">
-                          <div className="text-center mb-2">
-                            <p className="text-sm font-medium text-gray-700">
-                              Time Until Release
-                            </p>
+                        {daysUntilRelease !== null && (
+                          <div className="mt-3">
+                            <span className="font-medium text-gray-600">
+                              Days until release:
+                            </span>{" "}
+                            <span
+                              className={`font-semibold ${
+                                isExpired
+                                  ? "text-red-600"
+                                  : daysUntilRelease <= 7
+                                  ? "text-orange-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {isExpired ? "Released" : `${daysUntilRelease} days`}
+                            </span>
                           </div>
-                          <SimpleCountdown targetDate={preorder.releaseDate} />
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
 
-                {/* Summary Stats */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="text-2xl font-bold text-cyan-600">
-                          {preorders.length}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Total Active Countdowns
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="text-2xl font-bold text-purple-600">
-                          {
-                            preorders.filter((p) => {
-                              const days = getDaysUntilRelease(p.releaseDate);
-                              return days !== null && days <= 7 && days > 0;
-                            }).length
-                          }
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Releasing This Week
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="text-2xl font-bold text-green-600">
-                          {
-                            preorders.filter((p) => {
-                              const days = getDaysUntilRelease(p.releaseDate);
-                              return days !== null && days > 0;
-                            }).length
-                          }
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Future Releases
-                        </div>
+                      <div className="ml-4">
+                        <SimpleCountdown targetDate={preorder.releaseDate} />
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })
             )}
           </div>
         </div>

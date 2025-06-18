@@ -2,18 +2,7 @@
 import React, { useState } from "react";
 import PaymentModal from "../PaymentModal";
 import { useSession } from "next-auth/react";
-
-interface PricingTier {
-  type: string;
-  badge: string;
-  badgeColor: string;
-  leaks: string;
-  price: number; 
-  displayPrice: string;
-  currency: string; 
-  purchaseType: 'one_time' | 'monthly';
-  totalLeaks?: number;  
-}
+import { PRICING_TIERS, PricingTier } from "@/lib/constants";
 
 const PricingSection: React.FC = () => {
   const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null);
@@ -21,51 +10,8 @@ const PricingSection: React.FC = () => {
   const { data: session, status } = useSession();
 
   console.log("data: session, status", session, status);
-  const pricingTiers: PricingTier[] = [
-    {
-      type: "Common",
-      badge: "bg-blue-500",
-      badgeColor: "text-blue-400",
-      leaks: "1 Leak",
-      price: 9.99,
-      displayPrice: "$9.99",
-      currency: "USD",
-      purchaseType: "one_time",
-      totalLeaks: 1
-    },
-    {
-      type: "Rare",
-      badge: "bg-yellow-500",
-      badgeColor: "text-yellow-400",
-      leaks: "3 Leaks",
-      price: 14.99,
-      displayPrice: "$14.99",
-      currency: "USD",
-      purchaseType: "one_time",
-      totalLeaks: 3
-    },
-    {
-      type: "Legendary",
-      badge: "bg-red-500",
-      badgeColor: "text-red-400",
-      leaks: "10 Leaks",
-      price: 39.99,
-      displayPrice: "$39.99",
-      currency: "USD",
-      purchaseType: "one_time",
-      totalLeaks: 10
-    },
-    {
-      type: "Monthly Subscription",
-      badge: "bg-pink-500",
-      badgeColor: "text-pink-400",
-      leaks: "Unlimited Access",
-      price: 149.99,
-      displayPrice: "$149.99",
-      currency: "USD",
-      purchaseType: "monthly"
-    },
-  ];
+
+  const pricingTiers: PricingTier[] = PRICING_TIERS;
 
   const handlePurchase = (tier: PricingTier) => {
     console.log("🛍️ Starting purchase flow:", {

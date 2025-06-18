@@ -1,8 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { signIn, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { authService } from '@/lib/services'
+import { validationUtils } from '@/lib/utils/validation'
+import { USER_ROLES } from '@/lib/constants'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,7 +17,7 @@ export default function LoginPage() {
 
   // If already signed in, redirect based on role
   if (session) {
-    if (session.user.role === 'admin') {
+    if (session.user.role === USER_ROLES.ADMIN) {
       router.push('/admin/dashboard')
     } else {
       router.push('/')
@@ -27,16 +30,31 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    // Validate email
+    const emailError = validationUtils.email.getError(email.trim())
+    if (emailError) {
+      setError(emailError)
+      setLoading(false)
+      return
+    }
+
+    // Validate password
+    const passwordError = validationUtils.password.getError(password)
+    if (passwordError) {
+      setError(passwordError)
+      setLoading(false)
+      return
+    }
+
     try {
-      const result = await signIn('credentials', {
+      const result = await authService.login({
         email: email.trim(),
-        password,
-        redirect: false,
+        password
       })
 
-      if (result?.error) {
-        setError('Invalid email or password')
-      } else if (result?.ok) {
+      if (!result.success) {
+        setError(result.error || 'Invalid email or password')
+      } else {
         // Redirect will be handled by NextAuth callback
         router.refresh()
       }

@@ -5,20 +5,10 @@ import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
-type Order = {
-  id: number;
-  orderNumber: string;
-  customerEmail: string | null;
-  productName: string;
-  amount: number;
-  currency: string;
-  status: "pending" | "completed" | "failed" | "cancelled";
-  createdAt: Date;
-  paymentId: string;
-  transactionStatus: "success" | "failed" | "pending" | "refunded" | null;
-  transactionCreatedAt: Date | null;
-};
+import { paymentService } from "@/lib/services";
+import { formattingUtils } from "@/lib/utils/formatting";
+import { USER_ROLES, ORDER_STATUS } from "@/lib/constants";
+import { Order } from "@/types/payment";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -30,7 +20,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
-    } else if (session?.user?.role !== "admin") {
+    } else if (session?.user?.role !== USER_ROLES.ADMIN) {
       router.push("/");
     }
   }, [session, status, router]);
@@ -38,20 +28,8 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch("/api/admin/orders");
-        if (!response.ok) {
-          throw new Error("Failed to fetch orders");
-        }
-        const data = await response.json();
-        setOrders(
-          data.orders.map((order: any) => ({
-            ...order,
-            createdAt: new Date(order.createdAt),
-            transactionCreatedAt: order.transactionCreatedAt
-              ? new Date(order.transactionCreatedAt)
-              : null,
-          }))
-        );
+        const ordersData = await paymentService.getOrders();
+        setOrders(ordersData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch orders");
       } finally {
@@ -59,7 +37,7 @@ export default function AdminOrdersPage() {
       }
     };
 
-    if (session?.user?.role === "admin") {
+    if (session?.user?.role === USER_ROLES.ADMIN) {
       fetchOrders();
     }
   }, [session]);
@@ -88,6 +66,9 @@ export default function AdminOrdersPage() {
     );
   }
 
+  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.amount), 0);
+  const completedOrders = orders.filter((order) => order.status === ORDER_STATUS.COMPLETED).length;
+
   return (
     <AdminSidebar>
       <div className="p-6">
@@ -110,7 +91,7 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
             <p className="text-2xl font-bold text-purple-600 mt-2">
-              ${orders.reduce((sum, order) => sum + order.amount, 0).toFixed(2)}
+              {formattingUtils.currency.formatUSD(totalRevenue)}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
@@ -118,7 +99,7 @@ export default function AdminOrdersPage() {
               Completed Orders
             </h3>
             <p className="text-2xl font-bold text-green-600 mt-2">
-              {orders.filter((order) => order.status === "completed").length}
+              {completedOrders}
             </p>
           </div>
         </div>
@@ -172,16 +153,16 @@ export default function AdminOrdersPage() {
                       {order.productName}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {order.amount} {order.currency}
+                      {formattingUtils.currency.formatUSD(Number(order.amount))}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === "completed"
+                          order.status === ORDER_STATUS.COMPLETED
                             ? "bg-green-100 text-green-700"
-                            : order.status === "cancelled"
+                            : order.status === ORDER_STATUS.CANCELLED
                             ? "bg-red-100 text-red-700"
-                            : order.status === "failed"
+                            : order.status === ORDER_STATUS.FAILED
                             ? "bg-red-100 text-red-700"
                             : "bg-yellow-100 text-yellow-700"
                         }`}
@@ -190,13 +171,7 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Intl.DateTimeFormat("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }).format(order.createdAt)}
+                      {formattingUtils.date.formatDateTime(order.createdAt)}
                     </td>
                   </tr>
                 ))}

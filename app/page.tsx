@@ -7,6 +7,7 @@ import NFTSection from '@/components/sections/NFTSection';
 import MerchSection from '@/components/sections/MerchSection';
 import Footer from '@/components/common/Footer';
 import Container from '@/components/ui/Container';
+import { APP_CONFIG } from '@/lib/constants';
 
 export default function Home() {
   return (

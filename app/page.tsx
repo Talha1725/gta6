@@ -7,8 +7,10 @@ import NFTSection from '@/components/sections/NFTSection';
 import MerchSection from '@/components/sections/MerchSection';
 import Footer from '@/components/common/Footer';
 import Container from '@/components/ui/Container';
+import { fetchLatestPreorderServer } from '@/lib/services/preorder.service';
 
-export default function Home() {
+export default async function Home() {
+  const preorder = await fetchLatestPreorderServer();
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Full-width hero section */}
@@ -17,7 +19,7 @@ export default function Home() {
       {/* Contained sections */}
       <Container maxWidth="full" padding="none" className="relative z-10">
         <PricingSection />
-        <CountdownSection />
+        <CountdownSection preorder={preorder} />
         <CryptoSection />
         <NFTSection />
         <MerchSection />

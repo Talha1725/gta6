@@ -5,6 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { FormData } from "@/types";
+import { preorderService } from "@/lib/services";
+import { validationUtils } from "@/lib/utils/validation";
+import { formattingUtils } from "@/lib/utils/formatting";
+import { USER_ROLES } from "@/lib/constants";
 
 export default function GeneratePreorderPage() {
   const { data: session, status } = useSession();
@@ -31,7 +35,7 @@ export default function GeneratePreorderPage() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session) {
+    if (!session || session.user.role !== USER_ROLES.ADMIN) {
       router.push("/admin");
     }
   }, [session, status, router]);
@@ -45,19 +49,17 @@ export default function GeneratePreorderPage() {
       return;
     }
 
-    // Validate date is not in the past
-    const selectedDate = new Date(formData.selectedDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to compare only dates
-
-    if (selectedDate < today) {
-      setMessage("❌ Release date cannot be in the past.");
+    // Validate date using utility
+    const dateError = validationUtils.date.getError(formData.selectedDate);
+    if (dateError) {
+      setMessage(`❌ ${dateError}`);
       return;
     }
 
     // Validate date is not too far in the future (max 2 years)
     const maxDate = new Date();
     maxDate.setFullYear(maxDate.getFullYear() + 2);
+    const selectedDate = new Date(formData.selectedDate);
 
     if (selectedDate > maxDate) {
       setMessage("❌ Release date cannot be more than 2 years in the future.");
@@ -68,24 +70,12 @@ export default function GeneratePreorderPage() {
     setMessage("");
 
     try {
-      // Create the preorder with user-selected date
-      const preorderResponse = await fetch("/api/admin/generate-preorder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          notes:
-            formData.notes ||
-            `Manual preorder created on ${new Date().toLocaleDateString()}`,
-          selectedDate: formData.selectedDate,
-          releaseDate: new Date(
-            formData.selectedDate + "T23:59:59"
-          ).toISOString(),
-        }),
+      const result = await preorderService.createPreorder({
+        notes: formData.notes || `Manual preorder created on ${formattingUtils.date.formatShort(new Date())}`,
+        selectedDate: formData.selectedDate,
       });
 
-      const preorderData = await preorderResponse.json();
-
-      if (preorderData.success) {
+      if (result.success) {
         setMessage("✅ Preorder created successfully!");
 
         // Auto-clear success message after 2 seconds and redirect
@@ -94,7 +84,7 @@ export default function GeneratePreorderPage() {
           router.push("/admin/dashboard");
         }, 2000);
       } else {
-        setMessage("❌ Error creating preorder: " + preorderData.error);
+        setMessage("❌ Error creating preorder: " + result.error);
       }
     } catch (error) {
       setMessage("❌ Network error. Please try again.");
@@ -112,34 +102,13 @@ export default function GeneratePreorderPage() {
     setMessage("");
   };
 
-  // Format date for display
-  const formatDateForDisplay = (dateString: string) => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "Invalid Date";
-
-      return date.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch (error) {
-      return "Invalid Date";
-    }
-  };
-
   // Calculate days until selected date
   const getDaysUntilDate = (dateString: string) => {
     if (!dateString) return 0;
 
     try {
-      const selectedDate = new Date(dateString);
-      const today = new Date();
-      const diffTime = selectedDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return Math.max(0, diffDays);
+      const countdown = formattingUtils.time.formatCountdown(dateString);
+      return countdown.isExpired ? 0 : countdown.days;
     } catch (error) {
       return 0;
     }
@@ -198,13 +167,18 @@ export default function GeneratePreorderPage() {
 
               {/* Show date info only if date is selected */}
               {formData.selectedDate && (
-                <div className="mt-2 space-y-1">
-                  <p className="text-sm text-cyan-600">
-                    📅 Selected:{" "}
-                    <strong>
-                      {formatDateForDisplay(formData.selectedDate)}
-                    </strong>
-                  </p>
+                <div className="mt-3 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-cyan-800">
+                        Selected Date: {formattingUtils.date.formatLong(formData.selectedDate)}
+                      </p>
+                      <p className="text-sm text-cyan-600">
+                        Days until release: {getDaysUntilDate(formData.selectedDate)}
+                      </p>
+                    </div>
+                    <div className="text-2xl">⏰</div>
+                  </div>
                 </div>
               )}
             </div>
@@ -215,75 +189,51 @@ export default function GeneratePreorderPage() {
                 htmlFor="notes"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Notes
+                Notes (Optional)
               </label>
               <textarea
                 id="notes"
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={4}
-                placeholder="Add any notes about this preorder..."
+                className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all resize-none"
+                placeholder="Add any additional notes about this preorder..."
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Optional: Add context about this preorder entry
-              </p>
             </div>
 
-            {/* Buttons */}
-            <div className="flex items-center justify-between pt-4">
+            {/* Message Display */}
+            {message && (
+              <div
+                className={`p-4 rounded-lg ${
+                  message.startsWith("✅")
+                    ? "bg-green-50 border border-green-200 text-green-800"
+                    : "bg-red-50 border border-red-200 text-red-800"
+                }`}
+              >
+                <p className="text-sm">{message}</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                disabled={loading || !formData.selectedDate}
+                className="flex-1 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                {loading ? "Creating..." : "Create Preorder"}
+              </button>
               <button
                 type="button"
-                onClick={() => router.push("/admin/dashboard")}
-                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={resetForm}
                 disabled={loading}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                Cancel
+                Reset
               </button>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  disabled={loading}
-                >
-                  Reset
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading || !formData.selectedDate}
-                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 shadow-lg"
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Creating...
-                    </div>
-                  ) : (
-                    "🎮 Create Preorder"
-                  )}
-                </button>
-              </div>
             </div>
           </form>
-
-          {/* Status Message */}
-          {message && (
-            <div
-              className={`mt-6 p-4 rounded-lg ${
-                message.includes("✅")
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
-              }`}
-            >
-              {message}
-            </div>
-          )}
         </div>
       </div>
     </AdminSidebar>

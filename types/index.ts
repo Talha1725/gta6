@@ -1,23 +1,10 @@
-export interface PaymentFormProps {
-  amount: number;
-  currency: string;
-  productName: string;
-  onClose: () => void;
-  originalPrice?: number; // Optional original price for strikethrough
-  vatAmount?: number; // Optional VAT amount
-}
+// Re-export all types from organized modules
+export * from './auth';
+export * from './payment';
+export * from './nft';
+export * from './ui';
+export * from './preorder';
 
-export interface PaymentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  amount: number;
-  currency: string;
-  productName: string;
-  originalPrice?: number;
-  vatAmount?: number;
-  purchaseType: 'one_time' | 'monthly';
-  totalLeaks?: number;
-}
 export interface Preorder {
   id: number;
   notes: string | null;
@@ -25,10 +12,12 @@ export interface Preorder {
   releaseDate: string | null;
   createdAt: string;
 }
+
 export interface FormData {
   notes: string;
   selectedDate: string;
 }
+
 export interface NFTMintModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -92,6 +81,7 @@ export interface SignOutButtonProps {
   className?: string;
   showText?: boolean;
 }
+
 export interface ChatMessage {
   sender: "user" | "bot";
   text: string;

@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth.config';
+import { paymentService } from '@/lib/services';
+import { ORDER_STATUS, TRANSACTION_STATUS } from '@/lib/constants';
+import { db } from '@/lib/db';
+import { orders, transactions } from '@/lib/db/schema';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-05-28.basil',
@@ -128,6 +132,7 @@ async function handleOneTimePayment(
     metadata: paymentIntent.metadata
   });
 
+
   return NextResponse.json({
     clientSecret: paymentIntent.client_secret,
     paymentIntentId: paymentIntent.id,
@@ -174,7 +179,7 @@ async function handleSubscription(
         description: `Monthly subscription for ${productName}`,
         metadata: {
           type: 'subscription',
-          totalLeaks: 'unlimited',
+          totalLeaks: '9999',
           userId: session.user.id
         }
       });
@@ -201,11 +206,11 @@ async function handleSubscription(
     const prices = await stripe.prices.list({
       product: product.id,
       active: true,
+      limit: 100,
     });
 
-    const targetAmount = Math.round(amount * 100);
     price = prices.data.find(p =>
-      p.unit_amount === targetAmount &&
+      p.unit_amount === Math.round(amount * 100) &&
       p.currency === currency.toLowerCase() &&
       p.recurring?.interval === 'month'
     );
@@ -214,13 +219,14 @@ async function handleSubscription(
       console.log('🆕 Creating new price...');
       price = await stripe.prices.create({
         product: product.id,
-        unit_amount: targetAmount,
+        unit_amount: Math.round(amount * 100),
         currency: currency.toLowerCase(),
         recurring: {
           interval: 'month',
         },
         metadata: {
-          type: 'monthly_subscription',
+          type: 'subscription',
+          totalLeaks: '9999',
           userId: session.user.id
         }
       });
@@ -228,7 +234,7 @@ async function handleSubscription(
         id: price.id,
         unit_amount: price.unit_amount,
         currency: price.currency,
-        interval: price.recurring?.interval
+        recurring: price.recurring
       });
     } else {
       console.log('✅ Price found:', {
@@ -242,29 +248,21 @@ async function handleSubscription(
     throw error;
   }
 
-  // Create subscription with proper setup
-  console.log('📅 Creating subscription with immediate charge...');
+  // Create subscription
+  console.log('📅 Creating subscription...');
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
     items: [{ price: price.id }],
-
-    // Change this to charge immediately
     payment_behavior: 'default_incomplete',
-    payment_settings: {
-      save_default_payment_method: 'on_subscription',
-      payment_method_types: ['card', 'amazon_pay', 'us_bank_account', 'link']
-    },
-    expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
-
-    // Add this to charge the first invoice immediately after setup
-    proration_behavior: 'none',
-
+    payment_settings: { save_default_payment_method: 'on_subscription' },
+    expand: ['latest_invoice.payment_intent'],
     metadata: {
       userId: session.user.id,
       userEmail: session.user.email ?? null,
       userRole: session.user.role,
       productName,
       purchaseType: 'monthly',
+      totalLeaks: '9999',
     },
   });
 
@@ -272,131 +270,94 @@ async function handleSubscription(
     id: subscription.id,
     status: subscription.status,
     customer: subscription.customer,
-    pending_setup_intent: (subscription as any).pending_setup_intent,
-    purchaseType: 'monthly'
+    metadata: subscription.metadata
   });
 
-  // Try to get payment intent from various sources
-  const latestInvoice = subscription.latest_invoice as any;
-  let paymentIntent = latestInvoice?.payment_intent;
-  let setupIntent = (subscription as any).pending_setup_intent;
-
-  console.log('🔍 Checking payment options:', {
-    invoice_id: latestInvoice?.id,
-    invoice_status: latestInvoice?.status,
-    payment_intent_exists: !!paymentIntent,
-    setup_intent_exists: !!setupIntent,
-    setup_intent_id: setupIntent?.id
+  // Get the latest invoice and payment intent
+  const latestInvoice = subscription.latest_invoice as Stripe.Invoice & {
+    payment_intent?: Stripe.PaymentIntent;
+  };
+  console.log('📄 Latest invoice:', {
+    id: latestInvoice.id,
+    status: latestInvoice.status,
+    payment_intent: latestInvoice.payment_intent ? 'exists' : 'missing'
   });
 
-  // If we have a setup intent, use that for payment setup
-  if (setupIntent && setupIntent.client_secret) {
-    console.log('✅ Using setup intent for subscription setup:', {
-      id: setupIntent.id,
-      status: setupIntent.status,
-      client_secret: 'Present'
+  // Check if payment intent exists in the invoice
+  if (!latestInvoice.payment_intent) {
+    console.log('⚠️ Payment intent not found in latest invoice, creating separate payment intent...');
+    
+    // Create a separate payment intent for the subscription
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: currency.toLowerCase(),
+      customer: customerId,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        userId: session.user.id,
+        userEmail: session.user.email ?? null,
+        userRole: session.user.role,
+        productName,
+        purchaseType: 'monthly',
+        totalLeaks: '9999',
+        subscriptionId: subscription.id,
+      },
     });
 
-    return NextResponse.json({
-      clientSecret: setupIntent.client_secret,
-      subscriptionId: subscription.id,
-      setupIntentId: setupIntent.id,
-      customerId: customerId,
-      productId: product.id,
-      priceId: price.id,
-      purchaseType: 'monthly',
-      paymentType: 'setup_intent',
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        current_period_start: (subscription as any).current_period_start || null,
-        current_period_end: (subscription as any).current_period_end || null,
-      }
-    }, { status: 201 });
-  }
-
-  // If no setup intent, try to get payment intent
-  if (!paymentIntent && latestInvoice?.payment_intent) {
-    console.log('🔄 Fetching payment intent manually...');
-    try {
-      paymentIntent = await stripe.paymentIntents.retrieve(latestInvoice.payment_intent as string);
-    } catch (error) {
-      console.error('❌ Error fetching payment intent:', error);
-    }
-  }
-
-  // If we have a payment intent, use that
-  if (paymentIntent && paymentIntent.client_secret) {
-    console.log('✅ Using payment intent:', {
+    console.log('✅ Separate payment intent created for subscription:', {
       id: paymentIntent.id,
-      status: paymentIntent.status,
-      client_secret: 'Present'
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency
     });
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       subscriptionId: subscription.id,
-      paymentIntentId: paymentIntent.id,
       customerId: customerId,
-      productId: product.id,
-      priceId: price.id,
       purchaseType: 'monthly',
-      paymentType: 'payment_intent',
       subscription: {
         id: subscription.id,
         status: subscription.status,
-        current_period_start: (subscription as any).current_period_start || null,
-        current_period_end: (subscription as any).current_period_end || null,
+        customer: subscription.customer,
+        metadata: subscription.metadata
       },
       payment: {
         id: paymentIntent.id,
         amount: paymentIntent.amount,
         currency: paymentIntent.currency,
         status: paymentIntent.status,
+        metadata: paymentIntent.metadata
       }
     }, { status: 201 });
   }
 
-  // Last resort: create a setup intent manually
-  console.log('🔧 Creating setup intent manually...');
-  try {
-    const manualSetupIntent = await stripe.setupIntents.create({
-      customer: customerId,
-      usage: 'off_session',
-      payment_method_types: ['card', 'amazon_pay', 'us_bank_account', 'link'],
-      metadata: {
-        subscription_id: subscription.id,  // 🚨 ADD THIS LINE!
-        userId: session.user.id,
-        productName,
-        purchaseType: 'monthly',
-      },
-    });
-    console.log('✅ Manual setup intent created:', {
-      id: manualSetupIntent.id,
-      status: manualSetupIntent.status,
-      subscription_id: manualSetupIntent?.metadata?.subscription_id, // Log this
-      client_secret: 'Present'
-    });
+  // Payment intent exists in the invoice
+  const paymentIntent = latestInvoice.payment_intent;
+  console.log('✅ Payment intent found in invoice:', {
+    id: paymentIntent.id,
+    amount: paymentIntent.amount,
+    currency: paymentIntent.currency
+  });
 
-    return NextResponse.json({
-      clientSecret: manualSetupIntent.client_secret,
-      subscriptionId: subscription.id,
-      setupIntentId: manualSetupIntent.id,
-      customerId: customerId,
-      productId: product.id,
-      priceId: price.id,
-      purchaseType: 'monthly',
-      paymentType: 'setup_intent',
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        current_period_start: (subscription as any).current_period_start || null,
-        current_period_end: (subscription as any).current_period_end || null,
-      }
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('❌ Error creating manual setup intent:', error);
-    throw new Error('Failed to create payment setup for subscription');
-  }
+  return NextResponse.json({
+    clientSecret: paymentIntent.client_secret,
+    subscriptionId: subscription.id,
+    customerId: customerId,
+    purchaseType: 'monthly',
+    subscription: {
+      id: subscription.id,
+      status: subscription.status,
+      customer: subscription.customer,
+      metadata: subscription.metadata
+    },
+    payment: {
+      id: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      status: paymentIntent.status,
+      metadata: paymentIntent.metadata
+    }
+  }, { status: 201 });
 }

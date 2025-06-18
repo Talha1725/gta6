@@ -4,8 +4,7 @@ import { Orbitron, Space_Mono } from "next/font/google";
 import "./globals.css";
 import ChatWrapper from "../components/chat/chat-wrapper";
 import NextAuthSessionProvider from "./providers/SessionProvider";
-
-
+import { APP_CONFIG } from "@/lib/constants";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,8 +32,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GTA 6 Pre-Order Hub",
-  description: "Track every GTA 6 leak, deal & bonus in real-time",
+  title: APP_CONFIG.name,
+  description: APP_CONFIG.description,
 };
 
 const pixelFont = Space_Mono({

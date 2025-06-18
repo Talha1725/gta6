@@ -40,6 +40,7 @@ export const orders = pgTable('orders', {
     stripeCustomerId: varchar('stripe_customer_id', { length: 100 }),
     productName: varchar('product_name', { length: 255 }).notNull(), // Your 5 hardcoded products
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+    purchaseType:varchar('purchase_type', { length: 255 }),
     currency: varchar('currency', { length: 3 }).notNull().default('usd'),
     status: orderStatusEnum('status').default('pending').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
@@ -52,6 +53,7 @@ export const transactions = pgTable('transactions', {
     paymentId: varchar('payment_id', { length: 100 }).notNull().unique(), // Stripe payment_intent ID
     stripeCustomerId: varchar('stripe_customer_id', { length: 100 }),
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+    purchaseType:varchar('purchase_type', { length: 255 }),
     currency: varchar('currency', { length: 3 }).notNull().default('usd'),
     status: transactionStatusEnum('status').notNull(),
     failureReason: text('failure_reason'), // Only for failed payments

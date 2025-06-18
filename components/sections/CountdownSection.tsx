@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { CheckCircle, X, AlertCircle, Sparkles, Mail } from 'lucide-react';
-import { preorderService } from '@/lib/services';
-import { validationUtils } from '@/lib/utils/validation';
 import { formattingUtils } from '@/lib/utils/formatting';
+import { validationUtils } from '@/lib/utils/validation';
 import { API_ENDPOINTS } from '@/lib/constants';
 
-const CountdownSection: React.FC = () => {
+interface CountdownSectionProps {
+  preorder: any;
+}
+
+const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
   const [targetDate, setTargetDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,58 +28,34 @@ const CountdownSection: React.FC = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState(false);
 
-  // Fetch the latest preorder date from API
+  // Set target date from preorder prop
   useEffect(() => {
-    const fetchLatestPreorder = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const preorder = await preorderService.getLatestPreorder();
-        
-        if (preorder && preorder.releaseDate) {
-          const releaseDate = new Date(preorder.releaseDate);
-          setTargetDate(releaseDate);
-        } else {
-          // No preorders found - use fallback date without showing error
-          const fallbackDate = new Date();
-          fallbackDate.setDate(fallbackDate.getDate() + 30);
-          setTargetDate(fallbackDate);
-        }
-      } catch (err) {
-        console.error('Error fetching preorder:', err);
-        // Use fallback date and only show error for actual network/server issues
-        const fallbackDate = new Date();
-        fallbackDate.setDate(fallbackDate.getDate() + 30);
-        setTargetDate(fallbackDate);
-        setError('Unable to load latest countdown. Showing default timer.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatestPreorder();
-  }, []);
+    if (preorder && preorder.releaseDate) {
+      setTargetDate(new Date(preorder.releaseDate));
+    } else {
+      // No preorders found - use fallback date
+      const fallbackDate = new Date();
+      fallbackDate.setDate(fallbackDate.getDate() + 30);
+      setTargetDate(fallbackDate);
+    }
+    setLoading(false);
+  }, [preorder]);
 
   // Countdown timer effect
   useEffect(() => {
     if (!targetDate) return;
-
     const timer = setInterval(() => {
       const countdown = formattingUtils.time.formatCountdown(targetDate);
-      
       setTimeLeft({
         days: countdown.days.toString().padStart(2, '0'),
         hours: countdown.hours.toString().padStart(2, '0'),
         minutes: countdown.minutes.toString().padStart(2, '0'),
         seconds: countdown.seconds.toString().padStart(2, '0')
       });
-      
       if (countdown.isExpired) {
         clearInterval(timer);
       }
     }, 1000);
-    
     return () => clearInterval(timer);
   }, [targetDate]);
 
@@ -91,7 +70,6 @@ const CountdownSection: React.FC = () => {
           setEmailError(null);
         }, 500);
       }, 4000);
-      
       return () => clearTimeout(timer);
     }
   }, [emailSuccess, emailError]);

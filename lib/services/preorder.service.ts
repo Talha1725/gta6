@@ -159,4 +159,19 @@ export class PreorderService {
   }
 }
 
-export const preorderService = PreorderService.getInstance(); 
+export const preorderService = PreorderService.getInstance();
+
+// Server-friendly fetch for use in server components
+export async function fetchLatestPreorderServer() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/api/preorders/latest`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch preorder');
+  const data = await res.json();
+  return data.preorder || null;
+}
+
+export async function fetchAllPreordersServer() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/admin/preorders`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch preorders');
+  return await res.json();
+} 

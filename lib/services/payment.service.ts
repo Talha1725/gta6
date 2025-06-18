@@ -137,4 +137,10 @@ export class PaymentService {
   }
 }
 
-export const paymentService = PaymentService.getInstance(); 
+export const paymentService = PaymentService.getInstance();
+
+export async function fetchOrdersServer() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/admin/orders`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch orders');
+  return await res.json();
+} 

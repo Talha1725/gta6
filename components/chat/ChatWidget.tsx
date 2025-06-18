@@ -1,0 +1,286 @@
+import React, { useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { X } from "lucide-react";
+import ChatMessages, { ChatMessage } from "./ChatMessages";
+import ChatInput from "./ChatInput";
+import UpgradeOverlay from "./UpgradeOverlay";
+import { parseKeywords, getMessageCount, setMessageCount, updateRemainingRequests } from "./utils";
+import { LeakGenerationResponse } from "@/types";
+
+const API_BASE_URL = "http://185.210.144.97:3000";
+const MAX_FREE_REQUESTS = 1;
+
+const ChatWidget: React.FC = () => {
+  const { data: session } = useSession();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [remainingRequests, setRemainingRequests] = useState(MAX_FREE_REQUESTS);
+  const [showUpgradeOverlay, setShowUpgradeOverlay] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+
+  React.useEffect(() => {
+    updateRemainingRequests(setRemainingRequests, setShowUpgradeOverlay);
+  }, []);
+
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+
+    // Check if user has exceeded free limit
+    const messageCount = getMessageCount();
+    if (messageCount >= MAX_FREE_REQUESTS) {
+      setShowUpgradeOverlay(true);
+      return;
+    }
+
+    const keywords = parseKeywords(input);
+    if (keywords.length === 0) return;
+
+    // Increment message count BEFORE making API call
+    const newCount = messageCount + 1;
+    setMessageCount(newCount);
+
+    // Update remaining requests display
+    const remaining = Math.max(0, MAX_FREE_REQUESTS - newCount);
+    setRemainingRequests(remaining);
+    if (remaining === 0) setShowUpgradeOverlay(true);
+
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      sender: "user",
+      text: input,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Clear input
+    setInput("");
+    setLoading(true);
+
+    try {
+      // Make API call to the external backend
+      const response = await fetch(`${API_BASE_URL}/api/leaks/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          keywords: keywords,
+          gameTitle: keywords.join(" ") + " Game",
+          includeImage: true,
+          ...(session?.user?.email && { customerEmail: session.user.email })
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 402) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              sender: "ai",
+              title: "Rate Limit Reached",
+              text: errorData.message || "You have used all your free leaks for today.",
+            },
+          ]);
+          setRemainingRequests(0);
+          setShowUpgradeOverlay(true);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              sender: "ai",
+              title: "Error",
+              text: errorData.error || "Something went wrong. Please try again.",
+            },
+          ]);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const api = await response.json();
+      const data: LeakGenerationResponse = api.data;
+
+      setRemainingRequests(api.rateLimit?.remaining || data.rateLimit?.remaining || 0);
+      if ((api.rateLimit?.remaining || data.rateLimit?.remaining || 0) === 0) setShowUpgradeOverlay(true);
+      setCurrentImageIndex(0);
+
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: "ai",
+        title: data.title,
+        text: data.content,
+        image: data.image,
+        images: data.images,
+        prompt: data.image?.prompt || data.images?.[0]?.prompt,
+        disclaimer: data.disclaimer,
+        meta: {
+          source: data.source,
+          credibilityScore: data.credibilityScore,
+          ...data.meta,
+        },
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+      setLoading(false);
+      updateRemainingRequests(setRemainingRequests, setShowUpgradeOverlay);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          title: "Error",
+          text: "Sorry, something went wrong connecting to the server. Please try again.",
+        },
+      ]);
+      setLoading(false);
+    }
+  };
+
+  // Image navigation handlers
+  const handleNextImage = (msg: ChatMessage) => {
+    if (msg.images && msg.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % msg.images!.length);
+      setIsImageLoading(true);
+    }
+  };
+  const handlePrevImage = (msg: ChatMessage) => {
+    if (msg.images && msg.images.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? msg.images!.length - 1 : prev - 1
+      );
+      setIsImageLoading(true);
+    }
+  };
+
+  const scrollToSection = (sectionId: string): void => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+    }
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col">
+      {/* Upper gradient header */}
+      <div className="relative h-40 p-6 rounded-t-2xl bg-gradient-to-br from-yellow-400 via-purple-500 via-green-400 via-cyan-400 via-pink-500 to-yellow-400">
+        {/* Header content */}
+        <div className="flex flex-col items-start pt-2">
+          <h1 className="text-xl font-bold text-white font-mono">
+            Game Leaks Generator
+          </h1>
+          <p className="text-white text-xs font-mono mt-1">
+            Remaining free leaks: {remainingRequests}
+          </p>
+        </div>
+      </div>
+
+      {/* Lower body */}
+      <div className="flex flex-col p-5 justify-between overflow-hidden flex-1 relative bg-[#261025]">
+        {/* Full Upgrade Overlay - Only shows when trying 4th message */}
+        {(showUpgradeOverlay || remainingRequests <= 0) && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-[#261025]/95 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-purple-900 to-pink-900 rounded-xl p-6 text-center max-w-sm border border-purple-500">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-white mb-2">
+                  🚀 Upgrade to Pro
+                </h3>
+                <p className="text-sm text-gray-300">
+                  You've used all {MAX_FREE_REQUESTS} free leaks! Upgrade to get unlimited
+                  access to our AI leak generator.
+                </p>
+              </div>
+              <button
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
+                onClick={() => {
+                  setShowUpgradeOverlay(false);
+                  scrollToSection("ai-leak-generator");
+                }}
+              >
+                🔓 UNLOCK AI LEAKS
+              </button>
+            </div>
+          </div>
+        )}
+
+        {messages.length === 0 ? (
+          // Initial view when no messages
+          <div className="flex flex-col gap-6 mt-10">
+            {/* Title and description */}
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-mono text-white text-center font-semibold">
+                Generate your own game leak
+              </h2>
+
+              <p className="text-xs text-center text-gray-300 px-4 font-mono">
+                Enter comma-separated keywords to generate a confidential
+                game "leak"
+              </p>
+            </div>
+
+            {/* Example box */}
+            <div className="w-full rounded-lg p-2 text-gray-300 text-xs font-mono text-center whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 hover:bg-opacity-40 bg-purple-800/30">
+              Example: open world, sci-fi, space exploration
+            </div>
+          </div>
+        ) : (
+          // Chat messages view
+          <div className="flex-1 overflow-y-auto max-h-full pr-2 mb-4">
+            <ChatMessages
+              messages={messages}
+              currentImageIndex={currentImageIndex}
+              setCurrentImageIndex={setCurrentImageIndex}
+              isImageLoading={isImageLoading}
+              setIsImageLoading={setIsImageLoading}
+              onNextImage={handleNextImage}
+              onPrevImage={handlePrevImage}
+              loading={loading}
+            />
+            {loading && (
+              <div className="bg-[#72366F] p-3 rounded-xl flex items-center animate-in fade-in duration-300">
+                <div className="flex space-x-2 items-center">
+                  <div className="h-2 w-2 rounded-full animate-pulse bg-[#13C6FF]"></div>
+                  <div className="h-2 w-2 rounded-full animate-pulse delay-150 bg-[#13C6FF]"></div>
+                  <div className="h-2 w-2 rounded-full animate-pulse delay-300 bg-[#13C6FF]"></div>
+                  <span className="text-sm text-gray-400 ml-2">
+                    Accessing classified data...
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Input and button section at bottom */}
+        <div className="mt-auto">
+          <div className="w-full border-t my-2 transition-all duration-300 border-[#72366F]"></div>
+
+          <ChatInput
+            value={input}
+            onChange={setInput}
+            onSend={handleSend}
+            disabled={loading || remainingRequests <= 0}
+          />
+
+          <p className="text-[10px] text-center text-gray-400 font-mono mt-2 transition-all duration-300">
+            {showUpgradeOverlay
+              ? "Upgrade to Pro for unlimited leak generation"
+              : "Enter keywords to generate fictional game leaks"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChatWidget; 

@@ -208,4 +208,6 @@ export const VALIDATION = {
   notes: {
     maxLength: 1000,
   },
-} as const; 
+} as const;
+
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"; 

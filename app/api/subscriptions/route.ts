@@ -9,6 +9,7 @@ import { eq, and } from 'drizzle-orm';
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
+    console.log('session', session)
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -30,9 +31,9 @@ export async function GET() {
       .orderBy(orders.createdAt);
 
     if (userOrders.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         subscriptions: [],
-        message: 'No orders found for this user' 
+        message: 'No orders found for this user'
       });
     }
 
@@ -47,8 +48,8 @@ export async function GET() {
       endDate: transaction?.createdAt || order.createdAt,
       paymentId: transaction?.paymentId || '',
       lastPaymentDate: transaction?.createdAt || order.createdAt,
-      nextBillingDate: order.status === 'completed' && order.createdAt ? 
-        new Date(new Date(order.createdAt).setMonth(new Date(order.createdAt).getMonth() + 1)) : 
+      nextBillingDate: order.status === 'completed' && order.createdAt ?
+        new Date(new Date(order.createdAt).setMonth(new Date(order.createdAt).getMonth() + 1)) :
         undefined
     }));
 

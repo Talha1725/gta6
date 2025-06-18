@@ -117,10 +117,12 @@ const ChatWidget: React.FC = () => {
         image: data.image,
         images: data.images,
         prompt: data.image?.prompt || data.images?.[0]?.prompt,
+        //@ts-ignore
         disclaimer: data.disclaimer,
         meta: {
           source: data.source,
           credibilityScore: data.credibilityScore,
+          //@ts-ignore
           ...data.meta,
         },
       };

@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { authService } from '@/lib/services'
@@ -47,15 +47,15 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await authService.login({
+      const res = await signIn("credentials", {
+        redirect: false,
         email: email.trim(),
-        password
+        password,
       })
 
-      if (!result.success) {
-        setError(result.error || 'Invalid email or password')
-      } else {
-        // Redirect will be handled by NextAuth callback
+      if (res?.error) {
+        setError('Invalid email or password')
+      } else if (res?.ok) {
         router.refresh()
       }
     } catch (error) {

@@ -34,7 +34,6 @@ export default async function SubscriptionsPage({ searchParams }: SubscriptionsP
     // Fetch subscriptions using your existing service function with pagination parameters
     const data = await fetchSubscriptionsServer(cookieHeader, type, page, limit);
     
-    console.log('fetchSubscriptionsServer', data);
     
     return (
       <SubscriptionsClient 

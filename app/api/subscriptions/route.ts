@@ -86,9 +86,15 @@ export async function GET(request: Request) {
       // Add endDate only for subscriptions (monthly purchases)
       if (order.purchaseType === 'monthly' && order.createdAt) {
         // Calculate end date (next billing date)
-        const endDate = new Date(order.createdAt);
-        // For testing purposes, let's set the end date to be far in the future
-        endDate.setFullYear(endDate.getFullYear() + 1);
+        const createdDate = new Date(order.createdAt);
+        const endDate = new Date(createdDate);
+        endDate.setMonth(endDate.getMonth() + 1);
+        
+        // If the day of month is different (due to month length differences),
+        // set to the last day of the target month
+        if (createdDate.getDate() !== endDate.getDate()) {
+          endDate.setDate(0); // Set to last day of previous month
+        }
 
         return {
           ...baseData,

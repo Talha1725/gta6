@@ -37,7 +37,6 @@ export async function fetchLatestSubscriptionServer(cookieHeader: string): Promi
     });
 
     const data = await response.json();
-    // console.log('📦 API Response:', JSON.stringify(data, null, 2));
     
     if (!data.success) {
       // console.log('❌ API request not successful');
@@ -50,7 +49,7 @@ export async function fetchLatestSubscriptionServer(cookieHeader: string): Promi
     }
 
     const subscription = data.data[0];
-    // console.log('💳 Found subscription:', subscription);
+    console.log('💳 Found subscription:', subscription);
     
     // Check if subscription is active and not expired
     const isActive = subscription.status === 'completed';

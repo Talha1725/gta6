@@ -110,7 +110,7 @@ const ChatWrapper: React.FC = () => {
               : "scale-75 opacity-0 translate-y-12 -rotate-12"
           }`}
         >
-          <ChatWidget />
+          <ChatWidget handleClose={toggleChat} />
         </div>
       )}
     </div>

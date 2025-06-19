@@ -95,7 +95,7 @@ export default function SubscriptionsClient({ data, status }: SubscriptionsClien
 
     return (
         <div className="min-h-screen bg-nft-gradient text-white pt-8">
-            <Container maxWidth="7xl">
+            <Container maxWidth="7xl" padding='none'>
                 <Navigation />
                 <main className="p-6">
                     <div className="max-w-7xl mx-auto">

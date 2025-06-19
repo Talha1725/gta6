@@ -9,7 +9,7 @@ import { generateLeak, fetchLeaksCount } from "@/lib/services/leak.service";
 const API_BASE_URL = "http://185.210.144.97:3000";
 const MAX_FREE_REQUESTS = 1;
 
-const ChatWidget: React.FC = () => {
+const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -198,8 +198,8 @@ const ChatWidget: React.FC = () => {
               <button
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-lg hover:from-cyan-500 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
                 onClick={() => {
-                  setShowUpgradeOverlay(false);
                   scrollToSection("ai-leak-generator");
+                  handleClose();
                 }}
               >
                 🔓 UNLOCK AI LEAKS

@@ -2,15 +2,25 @@ import { getServerSession } from 'next-auth';
 import { fetchSubscriptionsServer } from '@/lib/services/subscription.service';
 import SubscriptionsClient from '@/components/subscriptions/SubscriptionsClient';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth.config';
+import { cookies } from 'next/headers';
 
 export default async function SubscriptionsPage() {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  
+  if (!session?.user?.email) {
     return <SubscriptionsClient subscriptions={[]} status="unauthenticated" />;
   }
-  // Get the session cookie from headers (for SSR fetch)
-  // This is a simplified example; you may need to adjust for your auth setup
-  const cookie = '';
-  const data = await fetchSubscriptionsServer(cookie);
-  return <SubscriptionsClient subscriptions={data.subscriptions} status="authenticated" />;
+
+  try {
+    // Get all cookies from the request
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+    
+    // Fetch subscriptions using the HTTP API with proper cookies
+    const data = await fetchSubscriptionsServer(cookieHeader);
+    return <SubscriptionsClient subscriptions={data.subscriptions} status="authenticated" />;
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error);
+    return <SubscriptionsClient subscriptions={[]} status="unauthenticated" />;
+  }
 }

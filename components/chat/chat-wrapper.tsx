@@ -90,44 +90,38 @@ const ChatWrapper: React.FC = () => {
   useEffect(() => {
     const chatWindow = chatWindowRef.current;
     if (!chatWindow || !shouldRender) return;
-
-    // Wheel event handler
+  
+    let startY = 0;
+  
     const handleWheel = (e: WheelEvent) => {
-      const el = chatWindow;
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const isScrollingUp = e.deltaY < 0;
-      const isScrollingDown = e.deltaY > 0;
+      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
       if (
-        (isScrollingUp && scrollTop === 0) ||
-        (isScrollingDown && scrollTop + clientHeight >= scrollHeight)
+        (e.deltaY < 0 && scrollTop === 0) ||
+        (e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight)
       ) {
         e.preventDefault();
       }
     };
-
-    // Touch event handlers
+  
     const handleTouchStart = (e: TouchEvent) => {
-      startYRef.current = e.touches[0].clientY;
+      startY = e.touches[0].clientY;
     };
+  
     const handleTouchMove = (e: TouchEvent) => {
-      const el = chatWindow;
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const currentY = e.touches[0].clientY;
-      const diff = currentY - startYRef.current;
-      const isScrollingUp = diff > 0;
-      const isScrollingDown = diff < 0;
+      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
+      const diff = e.touches[0].clientY - startY;
       if (
-        (isScrollingUp && scrollTop === 0) ||
-        (isScrollingDown && scrollTop + clientHeight >= scrollHeight)
+        (diff > 0 && scrollTop === 0) ||
+        (diff < 0 && scrollTop + clientHeight >= scrollHeight)
       ) {
         e.preventDefault();
       }
     };
-
+  
     chatWindow.addEventListener('wheel', handleWheel, { passive: false });
     chatWindow.addEventListener('touchstart', handleTouchStart, { passive: false });
     chatWindow.addEventListener('touchmove', handleTouchMove, { passive: false });
-
+  
     return () => {
       chatWindow.removeEventListener('wheel', handleWheel);
       chatWindow.removeEventListener('touchstart', handleTouchStart);

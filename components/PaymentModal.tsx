@@ -38,6 +38,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<
     string[]
   >([]);
+  const [paymentElementReady, setPaymentElementReady] = useState<boolean>(false);
 
   useEffect(() => {
     if (!stripe || !elements) return;
@@ -205,6 +206,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               },
             },
           }}
+          onReady={() => setPaymentElementReady(true)}
         />
       </div>
 
@@ -216,7 +218,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
       <button
         type="submit"
-        disabled={!stripe || isLoading}
+        disabled={!stripe || isLoading || !paymentElementReady}
         className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-gray-600 text-black font-medium py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
       >
         {isLoading ? (
@@ -247,6 +249,32 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [clientSecret, setClientSecret] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    if (isOpen) {
+      // Save the current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+      document.body.style.width = '100%';
+      document.documentElement.style.overflow = 'hidden';
+
+      return () => {
+        // Restore scroll position and styles
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.overflow = '';
+        document.body.style.width = '';
+        document.documentElement.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && amount > 0) {
@@ -290,7 +318,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto">
+      <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto h-[90vh] md:h-auto overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
           <button

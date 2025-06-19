@@ -149,3 +149,57 @@ export interface NFTCardProps {
   price: string;
   creatorLogo?: string;
 }
+
+// Subscription Types
+export interface Subscription {
+  plan: string;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  amount: number;
+  customerId: string;
+  endDate?: string;
+}
+
+export interface SubscriptionApiResponse {
+  data: Subscription[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+  type: string;
+  message: string;
+}
+
+export interface SubscriptionsClientProps {
+  data: SubscriptionApiResponse | null;
+  status: "authenticated" | "unauthenticated";
+}
+
+export interface StatsCardsProps {
+  data: SubscriptionApiResponse;
+  getTypeDisplayName: (type: string) => string;
+}
+
+export interface DataTableProps {
+  data: Subscription[];
+  currentType: 'all' | 'subscriptions' | 'onetime';
+  getStatusColor: (status: Subscription["status"]) => string;
+  formatDate: (date: string) => string;
+}
+
+export interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  onPageChange: (page: number) => void;
+}
+
+export interface FilterButtonsProps {
+  currentType: 'all' | 'subscriptions' | 'onetime';
+  onTypeChange: (type: 'all' | 'subscriptions' | 'onetime') => void;
+  getTypeDisplayName: (type: string) => string;
+}

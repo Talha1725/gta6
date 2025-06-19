@@ -12,6 +12,7 @@ import StripePaymentForm from "@/components/StripePaymentForm";
 import { useSession } from "next-auth/react";
 import { PaymentService } from "@/lib/services/payment.service";
 import { formattingUtils } from "@/lib/utils/formatting";
+import Link from "next/link";
 
 // Add at the top with other imports
 const stripePromise = loadStripe(
@@ -38,7 +39,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<
     string[]
   >([]);
-  const [paymentElementReady, setPaymentElementReady] = useState<boolean>(false);
+  const [paymentElementReady, setPaymentElementReady] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!stripe || !elements) return;
@@ -142,7 +144,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         <div className="mb-2">
           <p className="text-xl font-semibold text-white">{productName}</p>
           <p className="text-sm text-gray-400">
-            {purchaseType === 'monthly' ? 'Monthly subscription' : 'One-time payment'}
+            {purchaseType === "monthly"
+              ? "Monthly subscription"
+              : "One-time payment"}
           </p>
         </div>
 
@@ -160,9 +164,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         {vatAmount > 0 && (
           <div className="flex justify-between text-sm text-gray-500">
             <span>VAT amount</span>
-            <span>
-              {formattingUtils.currency.formatUSD(vatAmount)}
-            </span>
+            <span>{formattingUtils.currency.formatUSD(vatAmount)}</span>
           </div>
         )}
       </div>
@@ -227,7 +229,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             Processing...
           </div>
         ) : (
-          `Pay ${formattingUtils.currency.formatUSD(amount)}${purchaseType === 'monthly' ? ' /month' : ''}`
+          `Pay ${formattingUtils.currency.formatUSD(amount)}${
+            purchaseType === "monthly" ? " /month" : ""
+          }`
         )}
       </button>
     </form>
@@ -254,23 +258,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     if (isOpen) {
       // Save the current scroll position
       const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.overflow = 'hidden';
-      document.body.style.width = '100%';
-      document.documentElement.style.overflow = 'hidden';
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.overflow = "hidden";
+      document.body.style.width = "100%";
+      document.documentElement.style.overflow = "hidden";
 
       return () => {
         // Restore scroll position and styles
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.overflow = '';
-        document.body.style.width = '';
-        document.documentElement.style.overflow = '';
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.overflow = "";
+        document.body.style.width = "";
+        document.documentElement.style.overflow = "";
         window.scrollTo(0, scrollY);
       };
     }
@@ -290,19 +294,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             //@ts-ignore
             customerEmail: session?.user?.email,
             purchaseType,
-            totalLeaks
+            totalLeaks,
           });
 
           setClientSecret(response.clientSecret);
-          
+
           // Log order number if available (for debugging)
-          console.log('Payment intent response:', {
+          console.log("Payment intent response:", {
             hasOrderNumber: !!response.orderNumber,
-            orderNumber: response.orderNumber
+            orderNumber: response.orderNumber,
           });
         } catch (err) {
           console.error("Error creating payment intent:", err);
-          setError("Failed to initialize payment. Please try again.");
+          setError("Please login to make purchase.");
         } finally {
           setLoading(false);
         }
@@ -316,8 +320,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
       <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto max-h-[90vh] md:max-h-[82vh] overflow-y-auto custom-scrollbar">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
@@ -325,8 +332,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -337,8 +354,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <span className="ml-3 text-white">Initializing payment...</span>
           </div>
         ) : error ? (
-          <div className="bg-red-900/50 border border-red-500/50 text-red-400 p-4 rounded-lg mb-4">
-            {error}
+          <div>
+            <div className="bg-red-900/50 border border-red-500/50 text-red-400 p-4 rounded-lg mb-4">
+              <p>{error}</p>
+            </div>
+            <div className="flex justify-center mt-5 text-white">
+              <Link
+                href="/api/auth/signin"
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition-all duration-300"
+              >
+                Log In
+              </Link>
+            </div>
           </div>
         ) : clientSecret ? (
           <Elements

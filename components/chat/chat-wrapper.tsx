@@ -13,6 +13,7 @@ const ChatWrapper: React.FC = () => {
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatIconRef = useRef<HTMLImageElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startYRef = useRef<number>(0);
 
   const toggleChat = useCallback((): void => {
     if (isOpen) {
@@ -85,6 +86,55 @@ const ChatWrapper: React.FC = () => {
     };
   }, [shouldRender, isClosing, toggleChat]);
 
+  // Robust scroll boundary lock for chat window
+  useEffect(() => {
+    const chatWindow = chatWindowRef.current;
+    if (!chatWindow || !shouldRender) return;
+
+    // Wheel event handler
+    const handleWheel = (e: WheelEvent) => {
+      const el = chatWindow;
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const isScrollingUp = e.deltaY < 0;
+      const isScrollingDown = e.deltaY > 0;
+      if (
+        (isScrollingUp && scrollTop === 0) ||
+        (isScrollingDown && scrollTop + clientHeight >= scrollHeight)
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    // Touch event handlers
+    const handleTouchStart = (e: TouchEvent) => {
+      startYRef.current = e.touches[0].clientY;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      const el = chatWindow;
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - startYRef.current;
+      const isScrollingUp = diff > 0;
+      const isScrollingDown = diff < 0;
+      if (
+        (isScrollingUp && scrollTop === 0) ||
+        (isScrollingDown && scrollTop + clientHeight >= scrollHeight)
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    chatWindow.addEventListener('wheel', handleWheel, { passive: false });
+    chatWindow.addEventListener('touchstart', handleTouchStart, { passive: false });
+    chatWindow.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      chatWindow.removeEventListener('wheel', handleWheel);
+      chatWindow.removeEventListener('touchstart', handleTouchStart);
+      chatWindow.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [shouldRender]);
+
   return (
     <div className="fixed bottom-1 right-1 sm:right-3 z-50">
       <img
@@ -109,6 +159,7 @@ const ChatWrapper: React.FC = () => {
               ? "scale-100 opacity-100 translate-y-0 rotate-0"
               : "scale-75 opacity-0 translate-y-12 -rotate-12"
           }`}
+          style={{ overflowY: 'auto', overscrollBehavior: 'contain' }}
         >
           <ChatWidget handleClose={toggleChat} />
         </div>

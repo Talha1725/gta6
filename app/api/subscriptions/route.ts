@@ -3,57 +3,119 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth.config';
 import { db } from '@/lib/db';
-import { orders, transactions } from '@/lib/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { orders } from '@/lib/db/schema';
+import { eq, and, count } from 'drizzle-orm';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    console.log('session', session)
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all orders and their transactions for the user using email
-    const userOrders = await db
-      .select({
-        order: orders,
-        transaction: transactions,
-      })
+    const { searchParams } = new URL(request.url);
+
+    // Get query parameters
+    const type = searchParams.get('type') || 'all'; // 'all', 'subscriptions', 'onetime'
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = (page - 1) * limit;
+
+    // Validate type parameter
+    if (!['all', 'subscriptions', 'onetime'].includes(type)) {
+      return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
+    }
+
+    // Build where conditions
+    let whereConditions = and(
+      eq(orders.customerEmail, session.user.email),
+      eq(orders.status, 'completed')
+    );
+
+    // Add purchase type filter based on type
+    if (type === 'subscriptions') {
+      whereConditions = and(whereConditions, eq(orders.purchaseType, 'monthly'));
+    } else if (type === 'onetime') {
+      whereConditions = and(whereConditions, eq(orders.purchaseType, 'one_time'));
+    }
+
+    // Get total count for pagination
+    const [totalCountResult] = await db
+      .select({ count: count() })
       .from(orders)
-      .leftJoin(transactions, eq(orders.id, transactions.orderId))
-      .where(
-        and(
-          eq(orders.customerEmail, session.user.email),
-          eq(orders.status, 'completed')
-        )
-      )
-      .orderBy(orders.createdAt);
+      .where(whereConditions);
+
+    const totalCount = totalCountResult.count;
+
+    // Get paginated orders
+    const userOrders = await db
+      .select()
+      .from(orders)
+      .where(whereConditions)
+      .orderBy(orders.createdAt)
+      .limit(limit)
+      .offset(offset);
 
     if (userOrders.length === 0) {
       return NextResponse.json({
-        subscriptions: [],
-        message: 'No orders found for this user'
+        data: [],
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNextPage: false,
+          hasPrevPage: page > 1
+        },
+        type,
+        message: `No ${type === 'all' ? 'orders' : type} found for this user`
       });
     }
 
-    // Transform the data to match the frontend format
-    const subscriptions = userOrders.map(({ order, transaction }) => ({
-      id: order.orderNumber,
-      status: order.status,
-      plan: order.productName,
-      amount: Number(order.amount),
-      currency: order.currency,
-      startDate: order.createdAt,
-      endDate: transaction?.createdAt || order.createdAt,
-      paymentId: transaction?.paymentId || '',
-      lastPaymentDate: transaction?.createdAt || order.createdAt,
-      nextBillingDate: order.status === 'completed' && order.createdAt ?
-        new Date(new Date(order.createdAt).setMonth(new Date(order.createdAt).getMonth() + 1)) :
-        undefined
-    }));
+    // Transform the data to match the required format
+    const transformedData = userOrders.map((order) => {
+      const baseData = {
+        plan: order.productName,
+        status: order.status,
+        amount: Number(order.amount),
+        customerId: order.customerId
+      };
 
-    return NextResponse.json({ subscriptions });
+      // Add endDate only for subscriptions (monthly purchases)
+      if (order.purchaseType === 'monthly' && order.createdAt) {
+        // Calculate end date (next billing date)
+        const endDate = new Date(order.createdAt);
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        return {
+          ...baseData,
+          endDate: endDate.toISOString()
+        };
+      }
+
+      return baseData;
+    });
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return NextResponse.json({
+      data: transformedData,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages,
+        hasNextPage,
+        hasPrevPage
+      },
+      type,
+      message: `Successfully fetched ${type === 'all' ? 'all orders' : type}`
+    });
+
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
     return NextResponse.json(

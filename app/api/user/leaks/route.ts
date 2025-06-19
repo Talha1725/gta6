@@ -25,9 +25,10 @@ export async function GET(request: NextRequest) {
       })
       .from(users)
       .where(eq(users.id, userId))
-      .limit(1);
+      .limit(1)
+      .then(res => res[0]);
 
-    if (user.length === 0) {
+    if (!user) {
       return NextResponse.json({
         success: false,
         error: 'User not found'
@@ -37,9 +38,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        userId: user[0].id,
-        leaks: user[0].leaks || 0,
-        email: user[0].email
+        userId: user.id,
+        leaks: user.leaks || 0,
+        email: user.email
       }
     });
 

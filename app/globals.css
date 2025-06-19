@@ -303,6 +303,22 @@ body > div {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #06b6d4 #1f2937;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #06b6d4;
+    border-radius: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1f2937;
+    border-radius: 8px;
+  }
 }
 
 /* Responsive adjustments */

@@ -19,5 +19,12 @@ export async function generateLeak({
     body: JSON.stringify({ keywords, gameTitle, includeImage, customerEmail }),
   });
   if (!response.ok) throw new Error(await response.text());
-  return response.json();
+  const result = await response.json();
+  return result.data;
+}
+
+// Fetch leaks count for a user from the local API
+export async function fetchLeaksCount(userId: string) {
+  const res = await fetch(`/api/user/leaks?userId=${userId}`);
+  return res.json();
 } 

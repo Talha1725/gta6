@@ -1,11 +1,10 @@
 import React, { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { X } from "lucide-react";
 import ChatMessages, { ChatMessage } from "./ChatMessages";
 import ChatInput from "./ChatInput";
-import UpgradeOverlay from "./UpgradeOverlay";
-import { parseKeywords, getMessageCount, setMessageCount, updateRemainingRequests } from "./utils";
+import { parseKeywords, getMessageCount, setMessageCount, getNextImageIndex, getPrevImageIndex, scrollToSection, handleNextImage, handlePrevImage } from "../../lib/utils/chat";
 import { LeakGenerationResponse } from "@/types";
+import { generateLeak, fetchLeaksCount } from "@/lib/services/leak.service";
 
 const API_BASE_URL = "http://185.210.144.97:3000";
 const MAX_FREE_REQUESTS = 1;
@@ -15,36 +14,71 @@ const ChatWidget: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [remainingRequests, setRemainingRequests] = useState(MAX_FREE_REQUESTS);
+  const [remainingRequests, setRemainingRequests] = useState<number>(MAX_FREE_REQUESTS);
   const [showUpgradeOverlay, setShowUpgradeOverlay] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const isSending = useRef(false);
 
+  // Fetch leaks for logged-in user or use localStorage for guests
   React.useEffect(() => {
-    updateRemainingRequests(setRemainingRequests, setShowUpgradeOverlay);
-  }, []);
+    const fetchLeaks = async () => {
+      if (session?.user?.id) {
+        try {
+          const data = await fetchLeaksCount(session.user.id);
+          if (data.success) {
+            setRemainingRequests(data.data.leaks);
+            if (data.data.leaks === 0) setShowUpgradeOverlay(true);
+          } else {
+            setRemainingRequests(0);
+            setShowUpgradeOverlay(true);
+          }
+        } catch (e) {
+          setRemainingRequests(0);
+          setShowUpgradeOverlay(true);
+        }
+      } else {
+        const usedRequests = getMessageCount();
+        const remaining = Math.max(0, MAX_FREE_REQUESTS - usedRequests);
+        setRemainingRequests(remaining);
+        if (remaining === 0) setShowUpgradeOverlay(true);
+      }
+    };
+    fetchLeaks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || isSending.current) return;
+    setLoading(true);
+    isSending.current = true;
 
-    // Check if user has exceeded free limit
-    const messageCount = getMessageCount();
-    if (messageCount >= MAX_FREE_REQUESTS) {
-      setShowUpgradeOverlay(true);
-      return;
+    // For logged-in users, check remainingRequests from state
+    if (session?.user?.id) {
+      if (remainingRequests <= 0) {
+        setShowUpgradeOverlay(true);
+        setLoading(false);
+        isSending.current = false;
+        return;
+      }
+    } else {
+      // For guests, check localStorage
+      const currentUsedRequests = getMessageCount();
+      const currentRemaining = Math.max(0, MAX_FREE_REQUESTS - currentUsedRequests);
+      if (currentRemaining <= 0) {
+        setShowUpgradeOverlay(true);
+        setLoading(false);
+        isSending.current = false;
+        return;
+      }
     }
 
     const keywords = parseKeywords(input);
-    if (keywords.length === 0) return;
-
-    // Increment message count BEFORE making API call
-    const newCount = messageCount + 1;
-    setMessageCount(newCount);
-
-    // Update remaining requests display
-    const remaining = Math.max(0, MAX_FREE_REQUESTS - newCount);
-    setRemainingRequests(remaining);
-    if (remaining === 0) setShowUpgradeOverlay(true);
+    if (keywords.length === 0) {
+      setLoading(false);
+      isSending.current = false;
+      return;
+    }
 
     // Add user message to chat
     const userMessage: ChatMessage = {
@@ -53,60 +87,44 @@ const ChatWidget: React.FC = () => {
       text: input,
     };
     setMessages((prev) => [...prev, userMessage]);
-
-    // Clear input
     setInput("");
-    setLoading(true);
 
     try {
       // Make API call to the external backend
-      const response = await fetch(`${API_BASE_URL}/api/leaks/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          keywords: keywords,
-          gameTitle: keywords.join(" ") + " Game",
-          includeImage: true,
-          ...(session?.user?.email && { customerEmail: session.user.email })
-        }),
+      const data: LeakGenerationResponse = await generateLeak({
+        keywords,
+        gameTitle: keywords.join(" ") + " Game",
+        includeImage: true,
+        ...(session?.user?.email && { customerEmail: session.user.email })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 402) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              sender: "ai",
-              title: "Rate Limit Reached",
-              text: errorData.message || "You have used all your free leaks for today.",
-            },
-          ]);
+      // Only refresh leaks after successful response
+      if (session?.user?.id) {
+        try {
+          const leaksData = await fetchLeaksCount(session.user.id);
+          if (leaksData.success) {
+            setRemainingRequests(leaksData.data.leaks);
+            if (leaksData.data.leaks === 0) setShowUpgradeOverlay(true);
+          } else {
+            setRemainingRequests(0);
+            setShowUpgradeOverlay(true);
+          }
+        } catch (e) {
           setRemainingRequests(0);
           setShowUpgradeOverlay(true);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              sender: "ai",
-              title: "Error",
-              text: errorData.error || "Something went wrong. Please try again.",
-            },
-          ]);
         }
         setLoading(false);
-        return;
+        isSending.current = false;
+      } else {
+        // For guests, increment used count and update remaining requests
+        const currentUsedRequests = getMessageCount() + 1;
+        setMessageCount(currentUsedRequests);
+        const newRemaining = Math.max(0, MAX_FREE_REQUESTS - currentUsedRequests);
+        setRemainingRequests(newRemaining);
+        setLoading(false);
+        isSending.current = false;
       }
 
-      const api = await response.json();
-      const data: LeakGenerationResponse = api.data;
-
-      setRemainingRequests(api.rateLimit?.remaining || data.rateLimit?.remaining || 0);
-      if ((api.rateLimit?.remaining || data.rateLimit?.remaining || 0) === 0) setShowUpgradeOverlay(true);
       setCurrentImageIndex(0);
 
       const aiMessage: ChatMessage = {
@@ -129,7 +147,8 @@ const ChatWidget: React.FC = () => {
 
       setMessages((prev) => [...prev, aiMessage]);
       setLoading(false);
-      updateRemainingRequests(setRemainingRequests, setShowUpgradeOverlay);
+      isSending.current = false;
+      
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => [
@@ -142,33 +161,7 @@ const ChatWidget: React.FC = () => {
         },
       ]);
       setLoading(false);
-    }
-  };
-
-  // Image navigation handlers
-  const handleNextImage = (msg: ChatMessage) => {
-    if (msg.images && msg.images.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % msg.images!.length);
-      setIsImageLoading(true);
-    }
-  };
-  const handlePrevImage = (msg: ChatMessage) => {
-    if (msg.images && msg.images.length > 1) {
-      setCurrentImageIndex((prev) =>
-        prev === 0 ? msg.images!.length - 1 : prev - 1
-      );
-      setIsImageLoading(true);
-    }
-  };
-
-  const scrollToSection = (sectionId: string): void => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
-      });
+      isSending.current = false;
     }
   };
 
@@ -189,8 +182,8 @@ const ChatWidget: React.FC = () => {
 
       {/* Lower body */}
       <div className="flex flex-col p-5 justify-between overflow-hidden flex-1 relative bg-[#261025]">
-        {/* Full Upgrade Overlay - Only shows when trying 4th message */}
-        {(showUpgradeOverlay || remainingRequests <= 0) && (
+        {/* Full Upgrade Overlay - Shows when no requests left */}
+        {showUpgradeOverlay && remainingRequests <= 0 && (
           <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-[#261025]/95 backdrop-blur-sm">
             <div className="bg-gradient-to-br from-purple-900 to-pink-900 rounded-xl p-6 text-center max-w-sm border border-purple-500">
               <div className="mb-4">
@@ -198,7 +191,7 @@ const ChatWidget: React.FC = () => {
                   🚀 Upgrade to Pro
                 </h3>
                 <p className="text-sm text-gray-300">
-                  You've used all {MAX_FREE_REQUESTS} free leaks! Upgrade to get unlimited
+                  You've used all {MAX_FREE_REQUESTS} free leak{MAX_FREE_REQUESTS > 1 ? 's' : ''}! Upgrade to get unlimited
                   access to our AI leak generator.
                 </p>
               </div>
@@ -237,15 +230,15 @@ const ChatWidget: React.FC = () => {
           </div>
         ) : (
           // Chat messages view
-          <div className="flex-1 overflow-y-auto max-h-full pr-2 mb-4">
+          <div className="flex-1 overflow-y-auto max-h-full pr-2 mb-4 custom-scrollbar">
             <ChatMessages
               messages={messages}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
               isImageLoading={isImageLoading}
               setIsImageLoading={setIsImageLoading}
-              onNextImage={handleNextImage}
-              onPrevImage={handlePrevImage}
+              onNextImage={(msg) => handleNextImage(msg, setCurrentImageIndex, setIsImageLoading)}
+              onPrevImage={(msg) => handlePrevImage(msg, setCurrentImageIndex, setIsImageLoading)}
               loading={loading}
             />
             {loading && (
@@ -271,11 +264,11 @@ const ChatWidget: React.FC = () => {
             value={input}
             onChange={setInput}
             onSend={handleSend}
-            disabled={loading || remainingRequests <= 0}
+            disabled={loading}
           />
 
           <p className="text-[10px] text-center text-gray-400 font-mono mt-2 transition-all duration-300">
-            {showUpgradeOverlay
+            {remainingRequests <= 0
               ? "Upgrade to Pro for unlimited leak generation"
               : "Enter keywords to generate fictional game leaks"}
           </p>
@@ -285,4 +278,4 @@ const ChatWidget: React.FC = () => {
   );
 };
 
-export default ChatWidget; 
+export default ChatWidget;

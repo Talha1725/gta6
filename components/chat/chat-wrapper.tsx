@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ChatWidget from "./ChatWidget";
 
 const ChatWrapper: React.FC = () => {
@@ -10,16 +10,21 @@ const ChatWrapper: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [isClosing, setIsClosing] = useState<boolean>(false);
 
-  const toggleChat = (): void => {
-    if (isAnimating) return;
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+  const chatIconRef = useRef<HTMLImageElement>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const toggleChat = useCallback((): void => {
     if (isOpen) {
       // Start closing animation
       setIsClosing(true);
       setIsAnimating(true);
       setShowContent(false);
 
-      setTimeout(() => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+      closeTimeoutRef.current = setTimeout(() => {
         setShouldRender(false);
         setIsOpen(false);
         setIsClosing(false);
@@ -33,7 +38,6 @@ const ChatWrapper: React.FC = () => {
       setShouldRender(true);
       setShowContent(false);
 
-      // Trigger animation after DOM is rendered
       setTimeout(() => {
         setShowContent(true);
       }, 50);
@@ -42,11 +46,49 @@ const ChatWrapper: React.FC = () => {
         setIsAnimating(false);
       }, 400);
     }
-  };
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Close chat when clicking outside
+  useEffect(() => {
+    if (!shouldRender) return;
+    function handleClickOutside(event: MouseEvent) {
+      try {
+        const chatWindow = chatWindowRef.current;
+        const chatIcon = chatIconRef.current;
+        const windowContains = chatWindow && chatWindow.contains(event.target as Node);
+        const iconContains = chatIcon && chatIcon.contains(event.target as Node);
+        // Only close if not already closing
+        if (
+          chatWindow &&
+          !windowContains &&
+          chatIcon &&
+          !iconContains &&
+          !isClosing
+        ) {
+          toggleChat();
+        }
+      } catch (err) {
+        // silent
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [shouldRender, isClosing, toggleChat]);
 
   return (
     <div className="fixed bottom-1 right-1 sm:right-3 z-50">
       <img
+        ref={chatIconRef}
         src="/images/Chat-Icon.png"
         alt="Chat"
         onClick={toggleChat}
@@ -59,6 +101,7 @@ const ChatWrapper: React.FC = () => {
       {/* Chat window with smooth animations */}
       {shouldRender && (
         <div
+          ref={chatWindowRef}
           className={`rounded-2xl shadow-2xl overflow-hidden absolute bottom-24 sm:bottom-28 right-0 z-50 w-[90vw] sm:w-[440px] h-[500px] sm:h-[640px] max-w-[95vw] max-h-[80vh] border border-opacity-20 border-white origin-bottom-right transition-all duration-400 ease-out ${
             isClosing
               ? "scale-75 opacity-0 translate-y-8 rotate-6"

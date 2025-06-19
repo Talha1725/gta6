@@ -9,7 +9,7 @@ export default function SignOutButton({
   showText = true,
 }: SignOutButtonProps) {
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ callbackUrl: "/" });
   };
 
   return (

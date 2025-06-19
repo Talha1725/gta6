@@ -318,7 +318,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto h-[90vh] md:h-auto overflow-y-auto">
+      <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto max-h-[90vh] md:max-h-[82vh] overflow-y-auto custom-scrollbar">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
           <button

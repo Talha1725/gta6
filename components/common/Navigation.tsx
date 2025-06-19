@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import SignOutButton from '@/components/auth/SignOutButton';
 
-
 interface NavItem {
   label: string;
   href: string;
@@ -31,8 +30,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
     { label: 'Pre-Order Tracker', href: '/pre-order-tracker' },
     { label: 'AI Leak Generator', href: '/leak-generator' },
     { label: 'NFTs & Crypto', href: '/nfts' },
-    // @ts-ignore
-    ...(session ? [{ label: 'Subscriptions & Orders', href: '/subscriptions' }] : []),
+    { label: 'Subscriptions & Orders', href: '/subscriptions' },
     { label: 'Merch', href: '/merch' },
   ];
 
@@ -65,7 +63,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
         block: 'start',
         inline: 'nearest'
       });
-
+      
       // Close mobile menu if open
       setMobileMenuOpen(false);
     }
@@ -184,8 +182,8 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
                 {session ? (
                   <SignOutButton />
                 ) : (
-                  <Link
-                    href="/login"
+                  <Link 
+                    href="/login" 
                     className="bg-cyan-400 hover:bg-cyan-500 text-black font-medium py-1.5 px-3.5 text-sm rounded-full"
                   >
                     Login
@@ -253,7 +251,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
             {session ? (
               <SignOutButton className="w-full" />
             ) : (
-              <Link
+              <Link 
                 href="/login"
                 className="w-full bg-cyan-400 hover:bg-cyan-500 text-black font-medium rounded-full text-xs py-1 px-3 inline-block text-center"
               >

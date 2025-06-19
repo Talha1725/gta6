@@ -30,15 +30,3 @@ export function setMessageCount(count: number): void {
   }
 }
 
-export function updateRemainingRequests(setRemainingRequests: (n: number) => void, setShowUpgradeOverlay: (b: boolean) => void) {
-  try {
-    const messageCount = getMessageCount();
-    const remaining = Math.max(0, 3 - messageCount);
-    setRemainingRequests(remaining);
-    if (messageCount > 3) {
-      setShowUpgradeOverlay(true);
-    }
-  } catch (error) {
-    console.error("Error updating remaining requests:", error);
-  }
-} 

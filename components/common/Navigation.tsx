@@ -13,7 +13,7 @@ interface NavItem {
 }
 
 interface NavigationProps {
-  className?: string;
+  className?: string; 
 }
 
 const Navigation: React.FC<NavigationProps> = ({ className }) => {

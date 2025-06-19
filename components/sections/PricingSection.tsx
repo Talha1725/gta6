@@ -3,17 +3,23 @@ import React, { useState } from "react";
 import PaymentModal from "../PaymentModal";
 import { useSession } from "next-auth/react";
 import { PRICING_TIERS, PricingTier } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 const PricingSection: React.FC = () => {
   const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null);
   const [showModal, setShowModal] = useState(false);
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   console.log("data: session, status", session, status);
 
   const pricingTiers: PricingTier[] = PRICING_TIERS;
 
   const handlePurchase = (tier: PricingTier) => {
+    if (!session) {
+      router.push('/login');
+      return;
+    }
     console.log("🛍️ Starting purchase flow:", {
       tier: tier.type,
       amount: tier.price,

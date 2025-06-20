@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useSession, signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { authService } from '@/lib/services'
 import { validationUtils } from '@/lib/utils/validation'
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const success = searchParams.get('success')
 
   // If already signed in, redirect based on role
   if (session) {
@@ -69,6 +71,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900">
       <div className="bg-black/40 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8 shadow-2xl w-full max-w-md">
         <h2 className="text-2xl font-bold text-white text-center mb-6">Sign In</h2>
+        
+        {success && (
+          <div className="mb-4 p-3  text-green rounded">
+            Account created successfully! Please log in.
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Error message */}

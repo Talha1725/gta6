@@ -50,10 +50,10 @@ export default function SignupPage() {
       })
 
       if (!result.success) {
-        setError(result.error || 'Signup failed')
+        setError(result.message || 'Signup failed')
       } else {
         // Redirect to login page after successful signup
-        router.replace('/login?message=Account created successfully! Please sign in.')
+        router.push('/login?success=1')
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')

@@ -70,7 +70,7 @@ export async function GET(request: Request) {
           hasPrevPage: page > 1
         },
         type,
-        message: `No ${type === 'all' ? 'orders' : type} found for this user`
+        message: `No ${type === 'all' ? 'orders' : type} found`
       });
     }
 

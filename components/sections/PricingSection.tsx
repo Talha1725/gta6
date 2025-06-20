@@ -47,7 +47,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ hasActiveSubscription }
       id="ai-leak-generator"
       className="w-full py-20 bg-black relative overflow-hidden"
     >
-      <div className="bg-gradient-to-tr from-[#00eeff75] to-[#ec18909c] absolute h-[50rem] w-full rounded-full blur-[10rem] bottom-[-80%] left-1/2 -translate-x-1/2"></div>
+      <div className="bg-gradient-to-tr from-[#00eeff75] to-[#ec18909c] absolute h-[80rem] lg:h-[50rem] w-full rounded-full blur-[10rem] bottom-[-30%] md:bottom-[-80%] left-1/2 -translate-x-1/2"></div>
       <div className="mx-auto px-4 py-10" style={{ maxWidth: "1247px" }}>
         <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-16 font-orbitron">
           AI Leak Generator
@@ -64,7 +64,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ hasActiveSubscription }
                 className={`bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 flex flex-col h-full ${isDisabled ? 'opacity-70' : ''}`}
               >
                 <div className="py-7 px-6 flex flex-col flex-1">
-                  <div className="flex items-center mb-1">
+                  <div className="flex items-center mb-1 h-5">
                     <div
                       className={`w-3 h-3 rounded-full ${tier.badge} mr-2`}
                     ></div>

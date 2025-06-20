@@ -163,28 +163,28 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                 <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.days}
                 </div>
-                <div className="text-redC md:text-md mt-2 font-bold">Days</div>
+                <div className="text-danger md:text-md mt-2 font-bold">Days</div>
               </div>
               
               <div className="bg-white/5 backdrop-blur-sm rounded-lg">
                 <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.hours}
                 </div>
-                <div className="text-redC md:text-md mt-2 font-bold">Hours</div>
+                <div className="text-danger md:text-md mt-2 font-bold">Hours</div>
               </div>
               
               <div className="bg-white/5 backdrop-blur-sm rounded-lg">
                 <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.minutes}
                 </div>
-                <div className="text-redC md:text-md mt-2 font-bold">Minutes</div>
+                <div className="text-danger md:text-md mt-2 font-bold">Minutes</div>
               </div>
               
               <div className="bg-white/5 backdrop-blur-sm rounded-lg">
                 <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.seconds}
                 </div>
-                <div className="text-redC md:text-md mt-2 font-bold">Seconds</div>
+                <div className="text-danger md:text-md mt-2 font-bold">Seconds</div>
               </div>
             </div>
           </div>
@@ -193,12 +193,8 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
           <div>
             <div>
               <div className="flex flex-col items-center mb-4 lg:w-[80%] mx-auto">
-                <h3 className="text-white text-2xl font-semibold text-center tracking-wide font-orbitron">Get Notified</h3>
+                <h3 className="text-white text-2xl font-semibold text-center tracking-wide font-orbitron">Sign Up for Weekly GTA 6 Insider Leaks & Pre-Order Deals!</h3>
               </div>
-              
-              <p className="text-gray-300 text-sm mb-4">
-                Be the first to know when GTA 6 is available for pre-order!
-              </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -224,7 +220,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                     </>
                   ) : (
                     <>
-                      Subscribe Now
+                      Get Updates
                     </>
                   )}
                 </button>

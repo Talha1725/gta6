@@ -53,7 +53,8 @@ const MerchSection: React.FC = () => {
   ];
 
   return (
-    <section id='merch-section' className="w-full py-10 md:py-20 bg-gradient-to-b from-black to-purple-900/30">
+    <section id='merch-section' className="w-full py-10 md:pt-20 pb-20 lg:pb-[300px] relative overflow-hidden">
+       <div className="bg-gradient-to-tr from-[#00eeff65] to-[#ec18908e] absolute h-[50rem] w-full rounded-full blur-[10rem] bottom-[-42%] left-1/2 -translate-x-1/2"></div>
       <div className="mx-auto px-4 max-w-6xl">
         {/* Section Title */}
         <h2 className="text-center text-3xl md:text-5xl font-bold mb-6 md:mb-8">
@@ -62,7 +63,7 @@ const MerchSection: React.FC = () => {
         </h2>
 
         {/* Subtitle */}
-        <p className="text-center text-white mb-8 md:mb-14 font-spaceMono text-sm md:text-base">
+        <p className="text-center text-white mb-8 md:mb-14 font-spaceMono text-sm md:text-xl font-bold">
           6 Limited Drops Under Wickedly Unique™ Branding
         </p>
 
@@ -71,36 +72,37 @@ const MerchSection: React.FC = () => {
           {merchItems.map((item) => (
             <div
               key={item.id}
-              className="bg-gray-900/40 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-lg transition-all duration-300"
+              className="bg-white/5 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-lg transition-all duration-300 z-50"
             >
               {/* Merch Image - Fixed for Shopify images */}
-              <div className="relative w-full aspect-[4/4] bg-gray-800 overflow-hidden">
+              <div className="relative w-full overflow-hidden p-3 md:p-4">
                 {item.image.startsWith('https://cdn.shopify.com') ? (
                   /* Use regular img tag for Shopify images */
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="object-cover hover:scale-105 transition-transform duration-300 w-full h-[15rem] rounded-xl"
                   />
                 ) : (
                   /* Use Next.js Image for local images */
                   <Image
                     src={item.image}
                     alt={item.title}
-                    fill
+                    width={400}
+                    height={200}
                     style={{ objectFit: "cover" }}
-                    className="hover:scale-105 transition-transform duration-300"
+                    className="hover:scale-105 transition-transform duration-300 w-full h-[15rem] rounded-xl"
                   />
                 )}
               </div>
 
               {/* Merch Info - Balanced padding */}
               <div className="p-3 md:p-4 flex flex-col flex-grow">
-                <h3 className="text-white text-base md:text-lg mb-1 md:mb-2 font-spaceMono">
+                <h3 className="text-white text-base md:text-lg mb-1 md:mb-2 font-spaceMono font-bold">
                   {item.title}
                 </h3>
                 <div className="flex items-end mt-auto mb-3">
-                  <span className="text-white text-lg md:text-xl font-bold">
+                  <span className="text-white text-lg md:text-3xl font-bold font-orbitron">
                     {item.price}
                   </span>
                   {item.note && (
@@ -112,7 +114,7 @@ const MerchSection: React.FC = () => {
 
                 <Link
                   href={`/merch/${item.id}`}
-                  className="block bg-cyan-400 hover:bg-cyan-500 text-black text-center py-1.5 px-4 rounded-full font-medium transition-colors duration-300 text-sm md:text-base"
+                  className="block bg-cyan-400 hover:bg-cyan-500 text-black text-center py-1.5 px-4 rounded-full font-bold transition-colors duration-300 text-sm md:text-base font-orbitron"
                 >
                   Go to Product
                 </Link>

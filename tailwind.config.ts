@@ -44,7 +44,7 @@ const config = {
         },
         yellow: "#f0c216",
         green: "#14f195",
-        redC: "#ff003c",
+        danger: "#ff003c",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

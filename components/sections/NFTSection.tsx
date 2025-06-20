@@ -102,11 +102,11 @@ const NFTSection: React.FC = () => {
   };
 
   return (
-    <section id='nfts-section' className="w-full py-10 md:py-16 bg-black/70">
+    <section id='nfts-section' className="w-full pb-10 bg-black/70">
       <div className="mx-auto px-4 max-w-6xl">
         {/* Section Title - Responsive sizing */}
         <h2 className="text-center text-3xl md:text-5xl font-bold mb-6 md:mb-10">
-          <span className="text-yellow-400 font-orbitron">NFT</span>{' '}
+          <span className="text-yellow font-orbitron">NFT</span>{' '}
           <span className="text-white font-orbitron">COLLECTION</span>
         </h2>
         
@@ -123,8 +123,8 @@ const NFTSection: React.FC = () => {
               'Exclusive Merch & VIP Discord'
             ].map((perk, index) => (
               <div key={index} className="flex items-center">
-                <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>
-                <span className="text-white text-sm md:text-base font-spaceMono">
+                <div className="w-2 h-2 rounded-full bg-yellow mr-2"></div>
+                <span className="text-white text-sm font-spaceMono">
                   {perk}
                 </span>
               </div>
@@ -137,21 +137,21 @@ const NFTSection: React.FC = () => {
           {nftCards.map((card) => (
             <div 
               key={card.id} 
-              className="bg-gray-900 border-2 border-yellow-500/70 rounded-xl overflow-hidden
+              className="bg-white/5 rounded-md overflow-hidden
               flex flex-col h-full transition-all duration-300 hover:border-yellow-400 hover:scale-105"
             >
-              {/* NFT Image Container - Slightly reduced aspect ratio */}
-              <div className="relative w-full aspect-[16/9] bg-gray-900">
+              <div className="relative w-full p-3 md:p-4">
                 <Image
                   src={card.image}
                   alt={card.title}
-                  fill
-                  className="object-cover"
+                  width={400}
+                  height={100}
+                  className="w-full h-32 object-cover rounded"
                 />
                 
                 {/* Limited Supply Badge */}
                 {card.limited && (
-                  <div className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 text-xs font-bold rounded">
+                  <div className="absolute top-1 right-1 bg-red-600 text-white text-[12px] px-1 py-1 font-orbitron font-bold rounded">
                     Limited Supply
                   </div>
                 )}
@@ -168,7 +168,7 @@ const NFTSection: React.FC = () => {
                     {card.price}
                   </span>
                   {card.priceNote && (
-                    <span className="text-gray-400 text-xs ml-2 font-spaceMono">
+                    <span className="text-white text-[10px] ml-2 font-orbitron">
                       ({card.priceNote})
                     </span>
                   )}
@@ -176,8 +176,8 @@ const NFTSection: React.FC = () => {
                 
                 <button 
                   onClick={() => handleMintClick(card.id)}
-                  className="mt-auto block bg-cyan-400 hover:bg-cyan-500 text-black text-center 
-                  py-2 px-4 rounded-full font-medium transition-colors duration-300
+                  className="mt-auto block bg-cyan-400 hover:bg-cyan-500 font-bold text-white text-center 
+                  py-1 px-4 rounded-full transition-colors duration-300
                   text-sm md:text-base font-orbitron w-full"
                 >
                   Mint Now

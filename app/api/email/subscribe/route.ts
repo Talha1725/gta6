@@ -5,6 +5,9 @@ import { Pool } from 'pg';
 import { email } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
+// Force dynamic rendering since this route uses request body
+export const dynamic = 'force-dynamic';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }

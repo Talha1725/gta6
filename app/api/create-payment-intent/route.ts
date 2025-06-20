@@ -7,6 +7,9 @@ import { ORDER_STATUS, TRANSACTION_STATUS } from '@/lib/constants';
 import { db } from '@/lib/db';
 import { orders, transactions } from '@/lib/db/schema';
 
+// Force dynamic rendering since this route uses session and request body
+export const dynamic = 'force-dynamic';
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-05-28.basil',
 });

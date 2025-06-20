@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -7,7 +7,7 @@ import { authService } from '@/lib/services'
 import { validationUtils } from '@/lib/utils/validation'
 import { USER_ROLES } from '@/lib/constants'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -135,5 +135,20 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900">
+        <div className="bg-black/40 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8 shadow-2xl w-full max-w-md">
+          <h2 className="text-2xl font-bold text-white text-center mb-6">Sign In</h2>
+          <div className="text-center text-gray-300">Loading...</div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

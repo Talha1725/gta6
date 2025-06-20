@@ -4,6 +4,9 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
+// Force dynamic rendering since this route uses request.url and headers
+export const dynamic = 'force-dynamic';
+
 // GET /api/user/leaks - Get user's current leak count
 export async function GET(request: NextRequest) {
   try {

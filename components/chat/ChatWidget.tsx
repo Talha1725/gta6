@@ -6,7 +6,6 @@ import { parseKeywords, getMessageCount, setMessageCount, getNextImageIndex, get
 import { LeakGenerationResponse } from "@/types";
 import { generateLeak, fetchLeaksCount } from "@/lib/services/leak.service";
 
-const API_BASE_URL = "http://185.210.144.97:3000";
 const MAX_FREE_REQUESTS = 1;
 
 const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {

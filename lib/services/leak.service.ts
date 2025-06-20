@@ -1,6 +1,6 @@
 import { LeakGenerationResponse } from "@/types";
 
-const API_BASE_URL = "http://185.210.144.97:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL||'https://api.gta6.xnerds.co';
 
 export async function generateLeak({
   keywords,

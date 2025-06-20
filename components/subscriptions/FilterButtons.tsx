@@ -16,7 +16,7 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({
             className={`px-4 py-2 rounded-lg transition-all duration-300 ${
               currentType === type
                 ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white'
-                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                : 'bg-gray-800/50 text-white hover:bg-gray-700/50'
             }`}
           >
             {getTypeDisplayName(type)}

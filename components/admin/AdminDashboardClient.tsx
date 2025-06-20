@@ -109,15 +109,15 @@ export default function AdminDashboardClient({ preorders }: { preorders: Preorde
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                           <div>
-                            <span className="font-medium">Created:</span>{" "}
+                            <span className="font-bold">Created:</span>{" "}
                             {formattingUtils.date.formatLong(preorder.createdAt)}
                           </div>
                           <div>
-                            <span className="font-medium">Release Date:</span>{" "}
+                            <span className="font-bold">Release Date:</span>{" "}
                             {preorder.releaseDate ? formattingUtils.date.formatLong(preorder.releaseDate) : "-"}
                           </div>
                           <div>
-                            <span className="font-medium">Notes:</span>{" "}
+                            <span className="font-bold">Notes:</span>{" "}
                             {preorder.notes || "-"}
                           </div>
                         </div>

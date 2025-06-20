@@ -15,7 +15,7 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={!hasPrevPage}
         className={`px-3 py-2 rounded-lg transition-all duration-300 ${
           hasPrevPage
-            ? 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+            ? 'bg-gray-800/50 text-white hover:bg-gray-700/50'
             : 'bg-gray-900/50 text-gray-600 cursor-not-allowed'
         }`}
       >
@@ -42,7 +42,7 @@ const Pagination: React.FC<PaginationProps> = ({
               className={`px-3 py-2 rounded-lg transition-all duration-300 ${
                 pageNum === currentPage
                   ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white'
-                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                  : 'bg-gray-800/50 hover:bg-gray-700/50 text-white'
               }`}
             >
               {pageNum}
@@ -56,7 +56,7 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={!hasNextPage}
         className={`px-3 py-2 rounded-lg transition-all duration-300 ${
           hasNextPage
-            ? 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+            ? 'bg-gray-800/50 text-white hover:bg-gray-700/50'
             : 'bg-gray-900/50 text-gray-600 cursor-not-allowed'
         }`}
       >

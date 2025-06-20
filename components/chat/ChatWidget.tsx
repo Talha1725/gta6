@@ -168,9 +168,16 @@ const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
   return (
     <div className="w-full h-full flex flex-col">
       {/* Upper gradient header */}
-      <div className="relative h-40 p-6 rounded-t-2xl bg-gradient-to-br from-yellow-400 via-purple-500 via-green-400 via-cyan-400 via-pink-500 to-yellow-400">
+      <div
+        className="relative h-40 p-6 rounded-t-2xl"
+        style={{
+          background: `conic-gradient(from 202.48deg at 81.78% 23.22%, #F3B960 0deg, #B94DFB 32.76deg, #14F195 122.76deg, #13C6FF 230.76deg, #FF53EE 294.38deg, #F3B960 360deg)`
+        }}
+      >
+        {/* Optional: Overlay for darkening effect */}
+        <div className="absolute inset-0 rounded-t-2xl backdrop-blur-xl pointer-events-none w-full h-40 top-0 left-0" />
         {/* Header content */}
-        <div className="flex flex-col items-start pt-2">
+        <div className="flex flex-col items-start pt-2 z-50 relative">
           <h1 className="text-xl font-bold text-white font-mono">
             Game Leaks Generator
           </h1>
@@ -274,7 +281,7 @@ const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
           </p>
         </div>
       </div>
-    </div>
+      </div>
   );
 };
 

@@ -86,7 +86,7 @@ const ChatWrapper: React.FC = () => {
     };
   }, [shouldRender, isClosing, toggleChat]);
 
-  // Prevent background scrolling when chat is open
+  // Prevent background scrolling only when scrolling inside chat
   useEffect(() => {
     if (!shouldRender) return;
 
@@ -94,20 +94,33 @@ const ChatWrapper: React.FC = () => {
       const target = e.target as HTMLElement;
       const chatWindow = chatWindowRef.current;
       
-      // If the scroll event is happening inside the chat window OR any of its child elements, allow it only if it's scrollable content
+      // Only prevent scroll if the event is happening inside the chat window
       if (chatWindow && chatWindow.contains(target)) {
-        // Check if we're in a scrollable area (messages container)
-        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]');
+        // Find the closest scrollable element
+        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]') as HTMLElement;
+        
         if (scrollableElement) {
-          return; // Allow scrolling in scrollable areas
+          // Check if we can scroll in the intended direction
+          const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
+          const isScrollingUp = e.deltaY < 0;
+          const isScrollingDown = e.deltaY > 0;
+          
+          // Allow scroll if we're not at the boundary
+          const canScrollUp = scrollTop > 0;
+          const canScrollDown = scrollTop < scrollHeight - clientHeight;
+          
+          if ((isScrollingUp && canScrollUp) || (isScrollingDown && canScrollDown)) {
+            return; // Allow the scroll
+          }
         }
-        // For non-scrollable areas within chat (header, input), prevent background scroll
+        
+        // Prevent background scroll for all other cases within chat
         e.preventDefault();
         return;
       }
       
-      // Otherwise, prevent background scrolling
-      e.preventDefault();
+      // If scroll is outside chat window, allow normal background scrolling
+      // No preventDefault() here - let the scroll happen normally
     };
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -118,20 +131,35 @@ const ChatWrapper: React.FC = () => {
       const target = e.target as HTMLElement;
       const chatWindow = chatWindowRef.current;
       
-      // If the touch event is happening inside the chat window, check if it's in scrollable content
+      // Only prevent scroll if the event is happening inside the chat window
       if (chatWindow && chatWindow.contains(target)) {
-        // Check if we're in a scrollable area (messages container)
-        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]');
+        // Find the closest scrollable element
+        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]') as HTMLElement;
+        
         if (scrollableElement) {
-          return; // Allow scrolling in scrollable areas
+          const currentY = e.touches[0].clientY;
+          const diff = startYRef.current - currentY;
+          const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
+          
+          const isScrollingUp = diff < 0;
+          const isScrollingDown = diff > 0;
+          
+          // Check if we can scroll in the intended direction
+          const canScrollUp = scrollTop > 0;
+          const canScrollDown = scrollTop < scrollHeight - clientHeight;
+          
+          if ((isScrollingUp && canScrollUp) || (isScrollingDown && canScrollDown)) {
+            return; // Allow the scroll
+          }
         }
-        // For non-scrollable areas within chat (header, input), prevent background scroll
+        
+        // Prevent background scroll for all other cases within chat
         e.preventDefault();
         return;
       }
       
-      // Otherwise, prevent background scrolling
-      e.preventDefault();
+      // If touch is outside chat window, allow normal background scrolling
+      // No preventDefault() here - let the scroll happen normally
     };
 
     // Add event listeners to document to catch all scroll events
@@ -139,16 +167,16 @@ const ChatWrapper: React.FC = () => {
     document.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-    // Also prevent scrolling on the body
-    document.body.style.overflow = 'hidden';
+    // Don't prevent body overflow - allow normal scrolling outside chat
+    // document.body.style.overflow = 'hidden'; // Removed this line
 
     return () => {
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchmove', handleTouchMove);
       
-      // Restore body scrolling
-      document.body.style.overflow = 'unset';
+      // No need to restore since we're not blocking it
+      // document.body.style.overflow = 'unset'; // Removed this line
     };
   }, [shouldRender]);
 

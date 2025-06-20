@@ -42,10 +42,14 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existing.length > 0) {
+      // Update the existing record
+      await db.update(email)
+        .set({ status: 'active', updatedAt: new Date() })
+        .where(eq(email.emailAddress, cleanEmail));
       return NextResponse.json({
-        success: false,
-        error: 'This email is already subscribed to our updates!'
-      }, { status: 409 }); // 409 = Conflict
+        success: true,
+        message: 'Email subscription updated!'
+      });
     }
 
     // Insert new email with verification

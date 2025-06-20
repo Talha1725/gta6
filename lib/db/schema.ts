@@ -21,6 +21,7 @@ export const email = pgTable('email', {
     subscribedAt: timestamp('subscribed_at').defaultNow(),
     unsubscribedAt: timestamp('unsubscribed_at'),
     createdAt: timestamp('created_at').defaultNow(),
+    updatedAt:timestamp('updated_at').defaultNow(),
 });
 
 export const preorder = pgTable('preorder', {

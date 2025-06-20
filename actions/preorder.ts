@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { preorder } from '@/lib/db/schema';
-import { desc } from 'drizzle-orm';
+import { desc, isNotNull } from 'drizzle-orm';
 
 // Server action to fetch all preorders
 export async function fetchAllPreorders() {
@@ -48,4 +48,15 @@ export async function createPreorderAction({
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to create preorder' };
   }
+}
+
+export async function fetchLatestPreorder() {
+  const rows = await db
+    .select()
+    .from(preorder)
+    .where(isNotNull(preorder.releaseDate))
+    .orderBy(desc(preorder.releaseDate))
+    .limit(1);
+
+  return rows[0] || null;
 }

@@ -7,10 +7,10 @@ import NFTSection from '@/components/sections/NFTSection';
 import MerchSection from '@/components/sections/MerchSection';
 import Footer from '@/components/common/Footer';
 import Container from '@/components/ui/Container';
-import { fetchLatestPreorderServer } from '@/lib/services/preorder.service';
+import { fetchLatestPreorder } from '@/actions/preorder';
 
 export default async function Home() {
-  const preorder = await fetchLatestPreorderServer();
+  const preorder = await fetchLatestPreorder();
   
   return (
     <div className="min-h-screen bg-black text-white">

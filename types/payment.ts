@@ -5,7 +5,7 @@ export interface PaymentFormProps {
   onClose: () => void;
   originalPrice?: number;
   vatAmount?: number;
-  purchaseType?: 'one_time' | 'monthly';
+  purchaseType?: 'one_time' | 'monthly'|'pre_order';
 }
 
 export interface PaymentModalProps {
@@ -16,7 +16,7 @@ export interface PaymentModalProps {
   productName: string;
   originalPrice?: number;
   vatAmount?: number;
-  purchaseType: 'one_time' | 'monthly';
+  purchaseType: 'one_time' | 'monthly' | 'pre_order';
   totalLeaks?: number;
 }
 
@@ -75,7 +75,7 @@ export interface PaymentIntentRequest {
   currency: string;
   productName: string;
   customerEmail?: string;
-  purchaseType?: 'one_time' | 'monthly';
+  purchaseType?: 'one_time' | 'monthly'| 'pre_order';
   totalLeaks?: number;
 }
 

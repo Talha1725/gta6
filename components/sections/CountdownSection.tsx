@@ -31,6 +31,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [showModal, setShowModal] = useState(false);
+const [isAlreadySubscribed, setIsAlreadySubscribed] = useState(false);
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -215,13 +216,13 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                     onChange={handleEmailChange}
                     placeholder="Enter your email"
                     className="w-full px-4 py-2 text-center rounded-lg text-black placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-colors"
-                    disabled={emailSubmitting}
+                    disabled={emailSubmitting||isAlreadySubscribed}
                   />
                 </div>
                 
                 <button
                   type="submit"
-                  disabled={emailSubmitting}
+                  disabled={emailSubmitting||isAlreadySubscribed}
                   className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-cyan-500 py-2 px-4 text-black font-orbitron rounded-full font-bold transition-colors flex items-center justify-center"
                 >
                   {emailSubmitting ? (

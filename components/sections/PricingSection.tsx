@@ -1,17 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PaymentModal from "../PaymentModal";
 import { useSession } from "next-auth/react";
 import { PRICING_TIERS, PricingTier, PRODUCTS } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import { fetchLatestSubscriptionServer } from '@/lib/services/subscription.service'
 
-interface PricingSectionProps {
-  hasActiveSubscription: boolean;
-}
-
-const PricingSection: React.FC<PricingSectionProps> = ({ hasActiveSubscription }) => {
+const PricingSection = () => {
   const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -41,6 +40,31 @@ const PricingSection: React.FC<PricingSectionProps> = ({ hasActiveSubscription }
     setShowModal(false);
     setSelectedTier(null);
   };
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (status === 'authenticated' && session) {
+        setIsLoadingSubscription(true);
+        try {
+          // Get cookies from document.cookie for client-side
+          const cookieHeader = document.cookie;
+          const hasSubscription = await fetchLatestSubscriptionServer(cookieHeader);
+          console.log("hasActiveSubscription", hasSubscription);
+          setHasActiveSubscription(hasSubscription);
+        } catch (error) {
+          console.error("Error checking subscription:", error);
+          setHasActiveSubscription(false);
+        } finally {
+          setIsLoadingSubscription(false);
+        }
+      } else {
+        setHasActiveSubscription(false);
+        setIsLoadingSubscription(false);
+      }
+    };
+
+    checkSubscription();
+  }, [session, status]);
 
   return (
     <section
@@ -83,14 +107,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({ hasActiveSubscription }
 
                   <button
                     onClick={() => handlePurchase(tier)}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isLoadingSubscription}
                     className={`block text-center py-2 px-4 mt-4 rounded-full font-bold transition-colors font-orbitron ${
-                      isDisabled
+                      isDisabled || isLoadingSubscription
                         ? 'bg-gray-500 cursor-not-allowed'
                         : 'bg-green hover:bg-green-500 text-black'
                     }`}
                   >
-                    {isDisabled ? 'Subscribed' : 'Buy Now'}
+                    {isLoadingSubscription ? 'Loading...' : isDisabled ? 'Subscribed' : 'Buy Now'}
                   </button>
                 </div>
               </div>

@@ -150,7 +150,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
            <p className='text-white text-md font-spaceMono font-bold mt-4'><span className='text-yellow'>VIP Pre-Order Access ($9.99/MO) </span>– Early Access to Discounts & Bonuses</p>
 
           {/* Countdown Timer */}
-          <div className='p-4 rounded-2xl bg-black/30 mt-10 sm:w-[70%] lg:w-[40%] mx-auto'>
+          <div className='p-4 rounded-2xl bg-black/40 mt-10 sm:w-[70%] lg:w-[40%] mx-auto'>
           <div className="mb-12">
             {loading ? (
               <div className="text-white text-2xl">Loading countdown...</div>

@@ -176,7 +176,7 @@ const NFTSection: React.FC = () => {
                 
                 <button 
                   onClick={() => handleMintClick(card.id)}
-                  className="mt-auto block bg-cyan-400 hover:bg-cyan-500 font-bold text-white text-center 
+                  className="mt-auto block bg-cyan-400 hover:bg-cyan-500 font-bold text-black text-center 
                   py-1 px-4 rounded-full transition-colors duration-300
                   text-sm md:text-base font-orbitron w-full"
                 >

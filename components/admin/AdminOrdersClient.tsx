@@ -46,11 +46,11 @@ export default function AdminOrdersClient({ orders }: { orders: OrdersApiRespons
 
   const updateURL = (type: string, page: number, search?: string | null) => {
     const params = new URLSearchParams();
-    if (type !== "all") params.set("type", type);
-    if (page !== 1) params.set("page", page.toString());
+    params.set("type", type); // Always include type parameter
+    params.set("page", page.toString()); // Always include page parameter
     if (search && search.trim()) params.set("search", search.trim());
 
-    const newURL = params.toString() ? `?${params.toString()}` : "";
+    const newURL = `?${params.toString()}`;
     router.push(newURL, { scroll: false });
   };
 

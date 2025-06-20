@@ -54,7 +54,7 @@ const MerchSection: React.FC = () => {
 
   return (
     <section id='merch-section' className="w-full py-10 md:pt-20 pb-20 lg:pb-[300px] relative overflow-hidden">
-       <div className="bg-gradient-to-tr from-[#00eeff65] to-[#ec18908e] absolute h-[50rem] w-full rounded-full blur-[10rem] bottom-[-42%] left-1/2 -translate-x-1/2"></div>
+       <div className="bg-gradient-to-tr from-[#00eeff65] to-[#ec18908e] absolute h-[120rem] sm:h-[80rem] lg:h-[50rem] w-full rounded-full blur-[10rem] bottom-[-20%] md:bottom-[-42%] left-1/2 -translate-x-1/2"></div>
       <div className="mx-auto px-4 max-w-6xl">
         {/* Section Title */}
         <h2 className="text-center text-3xl md:text-5xl font-bold mb-6 md:mb-8">
@@ -75,13 +75,13 @@ const MerchSection: React.FC = () => {
               className="bg-white/5 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-lg transition-all duration-300 z-50"
             >
               {/* Merch Image - Fixed for Shopify images */}
-              <div className="relative w-full overflow-hidden p-3 md:p-4">
+              <div className="relative w-full overflow-hidden min-h-[15rem] p-3 md:p-4">
                 {item.image.startsWith('https://cdn.shopify.com') ? (
                   /* Use regular img tag for Shopify images */
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="object-cover hover:scale-105 transition-transform duration-300 w-full h-[15rem] rounded-xl"
+                    className="object-cover hover:scale-105 transition-transform h-full duration-300 w-full rounded-xl"
                   />
                 ) : (
                   /* Use Next.js Image for local images */
@@ -91,7 +91,7 @@ const MerchSection: React.FC = () => {
                     width={400}
                     height={200}
                     style={{ objectFit: "cover" }}
-                    className="hover:scale-105 transition-transform duration-300 w-full h-[15rem] rounded-xl"
+                    className="hover:scale-105 transition-transform duration-300 w-full h-full rounded-xl"
                   />
                 )}
               </div>

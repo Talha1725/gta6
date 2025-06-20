@@ -29,13 +29,13 @@ const CryptoSection: React.FC = () => {
           </div>
           
           {/* Main Heading */}
-          <h2 className="lg:w-[80%] text-4xl md:text-5xl font-bold z-50 relative mb-2 text-center">
+          <h2 className="lg:w-[80%] text-4xl md:text-5xl font-bold z-20 relative mb-2 text-center">
             <span className="text-pink-500 font-orbitron">NEON6IX COIN</span>
             <span className="text-white font-orbitron leading-normal"> - Crypto Purchase, Staking & Early Access</span>
           </h2>
           
           {/* Crypto Utility */}
-          <div className="mb-12 w-full max-w-3xl mx-auto z-50">
+          <div className="mb-12 w-full max-w-3xl mx-auto z-40">
             <h3 className="text-white text-xl font-semibold mb-6 font-spaceMono text-center">
               Crypto Utility:
             </h3>
@@ -60,9 +60,6 @@ const CryptoSection: React.FC = () => {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            
-             
-
             <Link 
               href="https://raydium.io/swap/?inputMint=sol&outputMint=69FpwjVrrcJNbW9MukR8VF1jeHy1ADGN2qxvpr64i9wN">
             <Button

@@ -5,6 +5,9 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
 
+// Force dynamic rendering since this route uses request body
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()

@@ -6,6 +6,9 @@ import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema';
 import { eq, and, count, desc } from 'drizzle-orm';
 
+// Force dynamic rendering since this route uses session and headers
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);

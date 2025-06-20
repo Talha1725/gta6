@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { preorder } from '@/lib/db/schema';
 import { desc, isNotNull } from 'drizzle-orm';
 
+// Force dynamic rendering since this route uses database queries
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

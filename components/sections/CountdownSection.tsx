@@ -242,7 +242,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                   <button
                     type="submit"
                     disabled={emailSubmitting || isAlreadySubscribed}
-                    className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-cyan-500 py-2 px-4 text-black font-orbitron rounded-full font-bold transition-colors flex items-center justify-center"
+                    className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-cyan-700 disabled:cursor-not-allowed py-2 px-4 text-black font-orbitron rounded-full font-bold transition-colors flex items-center justify-center"
                   >
                     {emailSubmitting ? (
                       <>

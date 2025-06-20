@@ -129,7 +129,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
   };
 
   return (
-    <section id='countdown-section' className="relative w-full flex items-center justify-center min-h-screen">
+    <section id='countdown-section' className="relative py-20 w-full flex items-center justify-center min-h-screen">
       {/* Background Image - Fixed positioning */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -137,7 +137,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
           alt="GTA 6 Beach Background"
           fill
           style={{ objectFit: 'cover' }}
-          className="opacity-30"
+          className="opacity-80"
         />
       </div>
 
@@ -145,11 +145,12 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4">
         <div className="text-center">
           {/* Title */}
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">
-            <span className="text-pink-500 font-orbitron">GTA 6</span> Release Countdown
-          </h2>
+          <h2 className="text-4xl md:text-6xl font-bold mb-8 text-pink-500 font-orbitron">
+           Time Until GTA 6 Pre-Orders Open</h2>
+           <p className='text-white text-md font-spaceMono font-bold mt-4'><span className='text-yellow'>VIP Pre-Order Access ($9.99/MO) </span>– Early Access to Discounts & Bonuses</p>
 
           {/* Countdown Timer */}
+          <div className='p-4 rounded-2xl bg-black/30 mt-10 sm:w-[70%] lg:w-[40%] mx-auto'>
           <div className="mb-12">
             {loading ? (
               <div className="text-white text-2xl">Loading countdown...</div>
@@ -158,42 +159,41 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
             ) : null}
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto">
-              <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-                <div className="text-4xl md:text-6xl font-bold text-pink-500 font-orbitron">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg">
+                <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.days}
                 </div>
-                <div className="text-white text-sm md:text-lg mt-2">Days</div>
+                <div className="text-redC md:text-md mt-2 font-bold">Days</div>
               </div>
               
-              <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-                <div className="text-4xl md:text-6xl font-bold text-pink-500 font-orbitron">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg">
+                <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.hours}
                 </div>
-                <div className="text-white text-sm md:text-lg mt-2">Hours</div>
+                <div className="text-redC md:text-md mt-2 font-bold">Hours</div>
               </div>
               
-              <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-                <div className="text-4xl md:text-6xl font-bold text-pink-500 font-orbitron">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg">
+                <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.minutes}
                 </div>
-                <div className="text-white text-sm md:text-lg mt-2">Minutes</div>
+                <div className="text-redC md:text-md mt-2 font-bold">Minutes</div>
               </div>
               
-              <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-                <div className="text-4xl md:text-6xl font-bold text-pink-500 font-orbitron">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg">
+                <div className="text-xl md:text-2xl font-bold text-white font-orbitron">
                   {timeLeft.seconds}
                 </div>
-                <div className="text-white text-sm md:text-lg mt-2">Seconds</div>
+                <div className="text-redC md:text-md mt-2 font-bold">Seconds</div>
               </div>
             </div>
           </div>
 
           {/* Email Subscription Form */}
-          <div className="max-w-md mx-auto">
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
-              <div className="flex flex-col items-center mb-4">
-                <Mail className="text-pink-500 mb-2" size={24} />
-                <h3 className="text-white text-lg font-semibold text-center tracking-wide">Get Notified</h3>
+          <div>
+            <div>
+              <div className="flex flex-col items-center mb-4 lg:w-[80%] mx-auto">
+                <h3 className="text-white text-2xl font-semibold text-center tracking-wide font-orbitron">Get Notified</h3>
               </div>
               
               <p className="text-gray-300 text-sm mb-4">
@@ -207,7 +207,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                     value={email}
                     onChange={handleEmailChange}
                     placeholder="Enter your email"
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-colors"
+                    className="w-full px-4 py-2 text-center rounded-lg text-black placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-colors"
                     disabled={emailSubmitting}
                   />
                 </div>
@@ -215,7 +215,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                 <button
                   type="submit"
                   disabled={emailSubmitting}
-                  className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+                  className="w-full bg-cyan-400 hover:bg-cyan-500 disabled:bg-cyan-500 py-2 px-4 text-black font-orbitron rounded-full font-bold transition-colors flex items-center justify-center"
                 >
                   {emailSubmitting ? (
                     <>
@@ -224,7 +224,6 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2" size={16} />
                       Subscribe Now
                     </>
                   )}
@@ -252,7 +251,10 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
                 </div>
               )}
             </div>
-          </div>
+          </div></div>
+          
+
+          
         </div>
       </div>
     </section>

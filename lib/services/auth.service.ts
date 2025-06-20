@@ -63,7 +63,7 @@ export class AuthService {
       if (!response.ok) {
         return {
           success: false,
-          message: data.error || 'Signup failed',
+          message: data.error || data.message || 'Signup failed',
           error: data.error,
         };
       }

@@ -8,7 +8,7 @@ export const users = pgTable('users', {
     id: text('id').primaryKey(),
     email: varchar('email', { length: 100 }).notNull().unique(),
     passwordHash: varchar('password_hash', { length: 255 }).notNull(),
-    leaks:integer('leaks').default(0),
+    leaks:integer('leaks').default(1),
     role: userRoleEnum('role').default('user').notNull(),
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at').defaultNow(),

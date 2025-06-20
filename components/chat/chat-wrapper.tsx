@@ -86,46 +86,69 @@ const ChatWrapper: React.FC = () => {
     };
   }, [shouldRender, isClosing, toggleChat]);
 
-  // Robust scroll boundary lock for chat window
+  // Prevent background scrolling when chat is open
   useEffect(() => {
-    const chatWindow = chatWindowRef.current;
-    if (!chatWindow || !shouldRender) return;
-  
-    let startY = 0;
-  
+    if (!shouldRender) return;
+
     const handleWheel = (e: WheelEvent) => {
-      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
-      if (
-        (e.deltaY < 0 && scrollTop === 0) ||
-        (e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight)
-      ) {
+      const target = e.target as HTMLElement;
+      const chatWindow = chatWindowRef.current;
+      
+      // If the scroll event is happening inside the chat window OR any of its child elements, allow it only if it's scrollable content
+      if (chatWindow && chatWindow.contains(target)) {
+        // Check if we're in a scrollable area (messages container)
+        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]');
+        if (scrollableElement) {
+          return; // Allow scrolling in scrollable areas
+        }
+        // For non-scrollable areas within chat (header, input), prevent background scroll
         e.preventDefault();
+        return;
       }
+      
+      // Otherwise, prevent background scrolling
+      e.preventDefault();
     };
-  
+
     const handleTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
+      startYRef.current = e.touches[0].clientY;
     };
-  
+
     const handleTouchMove = (e: TouchEvent) => {
-      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
-      const diff = e.touches[0].clientY - startY;
-      if (
-        (diff > 0 && scrollTop === 0) ||
-        (diff < 0 && scrollTop + clientHeight >= scrollHeight)
-      ) {
+      const target = e.target as HTMLElement;
+      const chatWindow = chatWindowRef.current;
+      
+      // If the touch event is happening inside the chat window, check if it's in scrollable content
+      if (chatWindow && chatWindow.contains(target)) {
+        // Check if we're in a scrollable area (messages container)
+        const scrollableElement = target.closest('.custom-scrollbar, [data-scrollable="true"]');
+        if (scrollableElement) {
+          return; // Allow scrolling in scrollable areas
+        }
+        // For non-scrollable areas within chat (header, input), prevent background scroll
         e.preventDefault();
+        return;
       }
+      
+      // Otherwise, prevent background scrolling
+      e.preventDefault();
     };
-  
-    chatWindow.addEventListener('wheel', handleWheel, { passive: false });
-    chatWindow.addEventListener('touchstart', handleTouchStart, { passive: false });
-    chatWindow.addEventListener('touchmove', handleTouchMove, { passive: false });
-  
+
+    // Add event listeners to document to catch all scroll events
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    // Also prevent scrolling on the body
+    document.body.style.overflow = 'hidden';
+
     return () => {
-      chatWindow.removeEventListener('wheel', handleWheel);
-      chatWindow.removeEventListener('touchstart', handleTouchStart);
-      chatWindow.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      
+      // Restore body scrolling
+      document.body.style.overflow = 'unset';
     };
   }, [shouldRender]);
 
@@ -153,7 +176,12 @@ const ChatWrapper: React.FC = () => {
               ? "scale-100 opacity-100 translate-y-0 rotate-0"
               : "scale-75 opacity-0 translate-y-12 -rotate-12"
           }`}
-          style={{ overflowY: 'auto', overscrollBehavior: 'contain' }}
+          style={{ 
+            overflowY: 'auto', 
+            overscrollBehavior: 'contain',
+            // Ensure the chat window itself can be scrolled
+            maxHeight: '80vh'
+          }}
         >
           <ChatWidget handleClose={toggleChat} />
         </div>

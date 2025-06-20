@@ -104,10 +104,8 @@ const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
           const leaksData = await fetchLeaksCount(session.user.id);
           if (leaksData.success) {
             setRemainingRequests(leaksData.data.leaks);
-            if (leaksData.data.leaks === 0) setShowUpgradeOverlay(true);
           } else {
             setRemainingRequests(0);
-            setShowUpgradeOverlay(true);
           }
         } catch (e) {
           setRemainingRequests(0);
@@ -237,7 +235,7 @@ const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
           </div>
         ) : (
           // Chat messages view
-          <div className="flex-1 overflow-y-auto max-h-full pr-2 mb-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto max-h-full pr-2 mb-4 custom-scrollbar" data-scrollable="true">
             <ChatMessages
               messages={messages}
               currentImageIndex={currentImageIndex}
@@ -249,7 +247,7 @@ const ChatWidget: React.FC<{ handleClose: () => void }> = ({ handleClose }) => {
               loading={loading}
             />
             {loading && (
-              <div className="bg-[#72366F] p-3 rounded-xl flex items-center animate-in fade-in duration-300">
+              <div className="bg-[#72366F] p-3 rounded-xl flex items-center animate-in fade-in duration-300 mt-3">
                 <div className="flex space-x-2 items-center">
                   <div className="h-2 w-2 rounded-full animate-pulse bg-[#13C6FF]"></div>
                   <div className="h-2 w-2 rounded-full animate-pulse delay-150 bg-[#13C6FF]"></div>

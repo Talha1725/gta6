@@ -70,11 +70,11 @@ export async function POST(request: Request) {
     }
 
     // Handle based on purchase type
-    if (purchaseType === 'monthly') {
+    if (purchaseType === 'monthly' || purchaseType === 'pre_order') {
       console.log('📅 ===============================================');
       console.log('📅 CREATING MONTHLY SUBSCRIPTION');
       console.log('📅 ===============================================');
-      return await handleSubscription(customerId!, amount, currency, productName, session, body);
+      return await handleSubscription(customerId!, amount, currency, productName, session, body,purchaseType);
     } else {
       console.log('💰 ===============================================');
       console.log('💰 CREATING ONE-TIME PAYMENT');
@@ -155,11 +155,14 @@ async function handleSubscription(
   currency: string,
   productName: string,
   session: any,
-  body: any
+  body: any,
+  purchaseType:string
 ) {
   console.log('📦 Creating/finding Stripe product for subscription...');
   console.log('💰 Subscription amount:', amount, currency);
   console.log('📦 Product name:', productName);
+  console.log('📦 Product purchaseType:', purchaseType);
+
 
   // Create or find product
   let product;
@@ -178,8 +181,8 @@ async function handleSubscription(
         name: productName,
         description: `Monthly subscription for ${productName}`,
         metadata: {
-          type: 'subscription',
-          totalLeaks: '9999',
+          type: purchaseType ?? 'subscription',
+          totalLeaks: body.totalLeaks ?? '9999',
           userId: session.user.id
         }
       });
@@ -225,8 +228,8 @@ async function handleSubscription(
           interval: 'month',
         },
         metadata: {
-          type: 'subscription',
-          totalLeaks: '9999',
+          type: purchaseType ?? 'subscription',
+          totalLeaks: body.totalLeaks ?? '9999',
           userId: session.user.id
         }
       });
@@ -261,8 +264,8 @@ async function handleSubscription(
       userEmail: session.user.email ?? null,
       userRole: session.user.role,
       productName,
-      purchaseType: 'monthly',
-      totalLeaks: '9999',
+      type: purchaseType ?? 'monthly',
+      totalLeaks: body.totalLeaks ?? '9999',
     },
   });
 
@@ -286,7 +289,7 @@ async function handleSubscription(
   // Check if payment intent exists in the invoice
   if (!latestInvoice.payment_intent) {
     console.log('⚠️ Payment intent not found in latest invoice, creating separate payment intent...');
-    
+
     // Create a separate payment intent for the subscription
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
@@ -300,8 +303,8 @@ async function handleSubscription(
         userEmail: session.user.email ?? null,
         userRole: session.user.role,
         productName,
-        purchaseType: 'monthly',
-        totalLeaks: '9999',
+        type: purchaseType ?? 'monthly',
+        totalLeaks: body.totalLeaks ?? '9999',
         subscriptionId: subscription.id,
       },
     });
@@ -316,7 +319,8 @@ async function handleSubscription(
       clientSecret: paymentIntent.client_secret,
       subscriptionId: subscription.id,
       customerId: customerId,
-      purchaseType: 'monthly',
+
+      purchaseType: purchaseType ?? 'monthly',
       subscription: {
         id: subscription.id,
         status: subscription.status,
@@ -345,7 +349,7 @@ async function handleSubscription(
     clientSecret: paymentIntent.client_secret,
     subscriptionId: subscription.id,
     customerId: customerId,
-    purchaseType: 'monthly',
+    purchaseType: purchaseType ?? 'monthly',
     subscription: {
       id: subscription.id,
       status: subscription.status,

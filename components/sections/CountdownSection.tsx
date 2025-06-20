@@ -4,13 +4,16 @@ import Image from 'next/image';
 import { CheckCircle, X, AlertCircle, Sparkles, Mail } from 'lucide-react';
 import { formattingUtils } from '@/lib/utils/formatting';
 import { validationUtils } from '@/lib/utils/validation';
-import { API_ENDPOINTS } from '@/lib/constants';
+import { API_ENDPOINTS, preorderPriceTier } from '@/lib/constants';
+import { useSession } from "next-auth/react";
+import PaymentModal from '../PaymentModal';
 
 interface CountdownSectionProps {
   preorder: any;
 }
 
 const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
+  const { data: session } = useSession();
   const [targetDate, setTargetDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,13 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    if (session?.user?.email) {
+      setEmail(session.user.email);
+    }
+  }, [session]);
   // Set target date from preorder prop
   useEffect(() => {
     if (preorder && preorder.releaseDate) {
@@ -116,7 +125,8 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
 
       if (data.success) {
         setEmailSuccess(true);
-        setEmail(''); // Clear the form
+        // Open subscription modal for the subscription tier
+        setShowModal(true);
       } else {
         setEmailError(data.error || 'Failed to subscribe. Please try again.');
       }
@@ -127,6 +137,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
       setEmailSubmitting(false);
     }
   };
+
 
   return (
     <section id='countdown-section' className="relative py-20 w-full flex items-center justify-center min-h-screen">
@@ -249,8 +260,17 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
             </div>
           </div></div>
           
-
-          
+          {/* Payment Modal for subscription */}
+            <PaymentModal
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+              amount={preorderPriceTier.price}
+              currency={preorderPriceTier.currency}
+              productName={preorderPriceTier.type}
+              purchaseType={preorderPriceTier.purchaseType}
+              totalLeaks={preorderPriceTier.totalLeaks}
+            />
+  
         </div>
       </div>
     </section>

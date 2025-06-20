@@ -12,6 +12,7 @@ import StripePaymentForm from "@/components/StripePaymentForm";
 import { useSession } from "next-auth/react";
 import { PaymentService } from "@/lib/services/payment.service";
 import { formattingUtils } from "@/lib/utils/formatting";
+import { SUB_HEADING } from "@/lib/constants";
 
 // Add at the top with other imports
 const stripePromise = loadStripe(
@@ -136,14 +137,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     // On success, the page will redirect to return_url
   };
 
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-900/80 backdrop-blur-sm p-4 rounded-lg border border-gray-800/50">
         <div className="mb-2">
           <p className="text-xl font-semibold text-white">{productName}</p>
           <p className="text-sm text-gray-400">
-            {purchaseType === 'monthly' ? 'Monthly subscription' : 'One-time payment'}
-          </p>
+          {SUB_HEADING[String(purchaseType) as keyof typeof SUB_HEADING] ?? 'One-time payment'}          </p>
         </div>
 
         <div className="flex justify-between mb-1">

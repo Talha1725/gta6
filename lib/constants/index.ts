@@ -63,6 +63,14 @@ export const PRODUCTS = {
     badgeColor: 'text-pink-400',
     purchaseType: 'monthly' as const,
   },
+  pre_order: {
+    name: 'VIP Pre-Order',
+    price: 9.99,
+    leaks: 0, 
+    badge: 'bg-[#EC1890]',
+    badgeColor: 'text-pink-400',
+    purchaseType: 'pre_order' as const,
+  },
 } as const;
 
 // Helper function to format leaks text
@@ -80,10 +88,20 @@ export interface PricingTier {
   price: number;
   displayPrice: string;
   currency: string;
-  purchaseType: 'one_time' | 'monthly';
+  purchaseType: 'one_time' | 'monthly'| "pre_order";
   totalLeaks?: number;
 }
-
+export const preorderPriceTier:PricingTier= {
+  type: PRODUCTS.pre_order.name,
+  badge: PRODUCTS.pre_order.badge,
+  badgeColor: PRODUCTS.pre_order.badgeColor,
+  leaks: formatLeaksText(PRODUCTS.pre_order.leaks),
+  price: PRODUCTS.pre_order.price,
+  displayPrice: `$${PRODUCTS.pre_order.price}`,
+  currency: "USD",
+  purchaseType: PRODUCTS.pre_order.purchaseType,
+  totalLeaks: PRODUCTS.pre_order.leaks
+}
 // Pricing tiers configuration
 export const PRICING_TIERS: PricingTier[] = [
   {
@@ -209,5 +227,9 @@ export const VALIDATION = {
     maxLength: 1000,
   },
 } as const;
+export const SUB_HEADING={
+  "monthly":"Monthly subscription",
+  "pre_order":"Monthly subscription"
+}
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"; 

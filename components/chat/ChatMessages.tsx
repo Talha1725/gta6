@@ -47,7 +47,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     {messages.map((msg, index) => (
       <div
         key={msg.id}
-        className={`transition-all duration-300 ease-out transform ${
+        className={`transition-all duration-300 ease-out transform mb-3 ${
           msg.sender === "user"
             ? "bg-[#EC1890] px-4 py-3 rounded-xl rounded-br-none text-white text-sm ml-auto max-w-[80%] inline-block animate-in slide-in-from-right-5 duration-300"
             : "bg-[#72366F] rounded-xl p-2 text-white font-mono text-sm w-full animate-in slide-in-from-left-5 duration-300"

@@ -138,7 +138,7 @@ const ChatWrapper: React.FC = () => {
         onClick={toggleChat}
         className={`w-24 h-24 sm:w-36 sm:h-36 cursor-pointer transition-all duration-300 transform hover:scale-110 ${
           isAnimating ? "pointer-events-none opacity-75" : ""
-        } ${isOpen ? "rotate-45 scale-95" : "hover:rotate-6 hover:shadow-2xl"}`}
+        } ${isOpen ? "rotate-45 scale-95" : "hover:rotate-6"}`}
         aria-label={isOpen ? "Close chat widget" : "Open chat widget"}
       />
 

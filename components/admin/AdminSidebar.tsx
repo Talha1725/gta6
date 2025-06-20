@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 
@@ -39,6 +39,20 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
     await signOut({ callbackUrl: '/' });
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      }
+      if (window.innerWidth > 768) {
+        setIsSidebarOpen(true);
+      }
+    };
+    handleResize(); // Run on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -66,7 +80,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-2 space-y-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (

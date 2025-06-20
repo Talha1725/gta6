@@ -108,9 +108,8 @@
 
 
 .navbar {
-  background-color: #1a1221;
+  background: #000000CC;
   border-radius: 50px;
-  border: 1px solid #3a2a45;
   padding: 10px 20px;
 }
 
@@ -343,15 +342,12 @@ body > div {
 
 
 .neonix-button {
-  display: inline-block;
-  padding: 12px 24px;
   background: transparent;
   color: #ff00ff;
   border: 2px solid #ff00ff;
   border-radius: 25px;
   text-decoration: none;
   font-weight: bold;
-  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.3s ease;

@@ -1,0 +1,1 @@
+ALTER TABLE "email" ADD COLUMN "updated_at" timestamp DEFAULT now();

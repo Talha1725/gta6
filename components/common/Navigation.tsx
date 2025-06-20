@@ -129,8 +129,8 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
             <Image
               src="/images/logo.svg"
               alt="GTA 6 Logo"
-              width={34}
-              height={34}
+              width={50}
+              height={50}
               priority
             />
           </Link>
@@ -145,7 +145,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="text-sm hover:text-cyan-400"
+                  className="text-sm hover:text-yellow"
                   onClick={(e) => handleNavClick(item, e)}
                 >
                   {item.label}

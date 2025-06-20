@@ -13,6 +13,7 @@ const ChatWrapper: React.FC = () => {
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const chatIconRef = useRef<HTMLImageElement>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startYRef = useRef<number>(0);
 
   const toggleChat = useCallback((): void => {
     if (isOpen) {
@@ -85,6 +86,49 @@ const ChatWrapper: React.FC = () => {
     };
   }, [shouldRender, isClosing, toggleChat]);
 
+  // Robust scroll boundary lock for chat window
+  useEffect(() => {
+    const chatWindow = chatWindowRef.current;
+    if (!chatWindow || !shouldRender) return;
+  
+    let startY = 0;
+  
+    const handleWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
+      if (
+        (e.deltaY < 0 && scrollTop === 0) ||
+        (e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight)
+      ) {
+        e.preventDefault();
+      }
+    };
+  
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+  
+    const handleTouchMove = (e: TouchEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = chatWindow;
+      const diff = e.touches[0].clientY - startY;
+      if (
+        (diff > 0 && scrollTop === 0) ||
+        (diff < 0 && scrollTop + clientHeight >= scrollHeight)
+      ) {
+        e.preventDefault();
+      }
+    };
+  
+    chatWindow.addEventListener('wheel', handleWheel, { passive: false });
+    chatWindow.addEventListener('touchstart', handleTouchStart, { passive: false });
+    chatWindow.addEventListener('touchmove', handleTouchMove, { passive: false });
+  
+    return () => {
+      chatWindow.removeEventListener('wheel', handleWheel);
+      chatWindow.removeEventListener('touchstart', handleTouchStart);
+      chatWindow.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [shouldRender]);
+
   return (
     <div className="fixed bottom-1 right-1 sm:right-3 z-50">
       <img
@@ -109,8 +153,9 @@ const ChatWrapper: React.FC = () => {
               ? "scale-100 opacity-100 translate-y-0 rotate-0"
               : "scale-75 opacity-0 translate-y-12 -rotate-12"
           }`}
+          style={{ overflowY: 'auto', overscrollBehavior: 'contain' }}
         >
-          <ChatWidget />
+          <ChatWidget handleClose={toggleChat} />
         </div>
       )}
     </div>

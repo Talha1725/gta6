@@ -140,7 +140,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
         <div className="flex-1 flex justify-end items-center gap-6">
           {/* Only show public nav on non-admin pages */}
           {!isAdminArea && (
-            <nav className="hidden md:flex gap-6">
+            <nav className="hidden xl:flex gap-3 xl:gap-6">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
@@ -156,7 +156,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
 
           {/* Admin nav for admin pages */}
           {isAdminArea && (
-            <nav className="hidden md:flex gap-6">
+            <nav className="hidden xl:flex gap-6">
               <Link href="/admin/dashboard" className="text-sm hover:text-cyan-400">
                 Dashboard
               </Link>
@@ -194,7 +194,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
           </div>
 
           <button
-            className="md:hidden flex items-center justify-center"
+            className="xl:hidden flex items-center justify-center"
             onClick={() => setMobileMenuOpen(true)}
           >
             <Menu className="w-5 h-5" />

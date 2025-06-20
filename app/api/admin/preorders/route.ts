@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { preorderService } from '@/lib/services';
+import { getAllPreorders } from '@/lib/db/queries';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const preorders = await preorderService.getAllPreorders();
+    const preorders = await getAllPreorders();
     
     return NextResponse.json({
       success: true,

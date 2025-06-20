@@ -115,7 +115,7 @@ export default function AdminOrdersClient({ orders }: { orders: Order[] }) {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2 py-1 rounded-full text-xs text-black font-medium ${
                           order.status === ORDER_STATUS.COMPLETED
                             ? "bg-green-100 text-green-700"
                             : order.status === ORDER_STATUS.CANCELLED

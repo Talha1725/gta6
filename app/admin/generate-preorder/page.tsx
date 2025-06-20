@@ -9,6 +9,7 @@ import { preorderService } from "@/lib/services";
 import { validationUtils } from "@/lib/utils/validation";
 import { formattingUtils } from "@/lib/utils/formatting";
 import { USER_ROLES } from "@/lib/constants";
+import { createPreorderAction } from '@/actions/preorder';
 
 export default function GeneratePreorderPage() {
   const { data: session, status } = useSession();
@@ -70,7 +71,7 @@ export default function GeneratePreorderPage() {
     setMessage("");
 
     try {
-      const result = await preorderService.createPreorder({
+      const result = await createPreorderAction({
         notes: formData.notes || `Manual preorder created on ${formattingUtils.date.formatShort(new Date())}`,
         selectedDate: formData.selectedDate,
       });

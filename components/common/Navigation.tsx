@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import SignOutButton from '@/components/auth/SignOutButton';
 
@@ -21,38 +21,49 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(9388);
   const pathname = usePathname();
-
+  
   // Check if we're in admin area
   const isAdminArea = pathname?.startsWith('/admin');
 
   const navItems: NavItem[] = [
     { label: 'Home', href: '/' },
-    { label: 'Pre-Order Tracker', href: '/pre-order-tracker' },
-    { label: 'AI Leak Generator', href: '/leak-generator' },
-    { label: 'NFTs & Crypto', href: '/nfts' },
+    { label: 'Pre-Order Tracker', href: '#countdown-section' },
+    { label: 'AI Leak Generator', href: '#ai-leak-generator' },
+    { label: 'NFTs & Crypto', href: '#nfts-section' },
     { label: 'Subscriptions & Orders', href: '/subscriptions' },
-    { label: 'Merch', href: '/merch' },
+    { label: 'Merch', href: '#merch-section' },
   ];
 
-  // Map navigation items to their corresponding section IDs
-  const getScrollTargetId = (href: string) => {
-    switch (href) {
-      case '/':
-        return 'home-section';
-      case '/pre-order-tracker':
-        return 'countdown-section';
-      case '/leak-generator':
-        return 'ai-leak-generator';
-      case '/nfts':
-        return 'nfts-section';
-      case '/merch':
-        return 'merch-section';
-      case '/legal':
-        return 'legal-section';
-      default:
-        return null;
-    }
-  };
+  // Helper to determine if a section is active (for scrollspy)
+  const [activeSection, setActiveSection] = useState<string>('home-section');
+
+  useEffect(() => {
+    if (pathname !== '/') return;
+    const sectionIds = [
+      'home-section',
+      'countdown-section',
+      'ai-leak-generator',
+      'nfts-section',
+      'merch-section',
+    ];
+    const handleScroll = () => {
+      let found = 'home-section';
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 80 && rect.bottom > 80) {
+            found = id;
+            break;
+          }
+        }
+      }
+      setActiveSection(found);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   // Smooth scroll function
   const handleSmoothScroll = (targetId: string) => {
@@ -73,7 +84,7 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
   const handleNavClick = (item: NavItem, e: React.MouseEvent<HTMLAnchorElement>) => {
     // Check if we're on the home page and this item has a scroll target
     if (pathname === '/') {
-      const targetId = getScrollTargetId(item.href);
+      const targetId = item.href.replace('#', '') || 'home-section';
       if (targetId) {
         e.preventDefault();
         handleSmoothScroll(targetId);
@@ -120,6 +131,23 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
 
   const formattedUserCount = onlineUsers.toLocaleString();
 
+  // On mount, if ?scrollTo=section-id is present, scroll to that section
+  useEffect(() => {
+    if (pathname === '/' && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const scrollTo = params.get('scrollTo');
+      if (scrollTo) {
+        setTimeout(() => {
+          handleSmoothScroll(scrollTo);
+          // Remove scrollTo param from URL after scrolling
+          const url = new URL(window.location.href);
+          url.searchParams.delete('scrollTo');
+          window.history.replaceState({}, '', url.pathname);
+        }, 100);
+      }
+    }
+  }, [pathname]);
+
   return (
     <header className={`mb-4 ${className || ''}`.trim()}>
       <div className="navbar flex justify-between items-center">
@@ -141,16 +169,50 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
           {/* Only show public nav on non-admin pages */}
           {!isAdminArea && (
             <nav className="hidden xl:flex gap-3 xl:gap-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm hover:text-yellow"
-                  onClick={(e) => handleNavClick(item, e)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isPageLink = item.href === '/subscriptions';
+                let isActive = false;
+                if (isPageLink) {
+                  isActive = pathname === '/subscriptions';
+                } else if (pathname === '/') {
+                  const sectionId = item.href.replace('#', '') || 'home-section';
+                  isActive = activeSection === sectionId;
+                }
+                // Always highlight Home if on home page and at top
+                if (item.label === 'Home' && pathname === '/' && activeSection === 'home-section') {
+                  isActive = true;
+                }
+                return isPageLink ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`text-sm hover:text-yellow ${isActive ? 'text-yellow' : ''}`}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <Link
+                    key={item.label}
+                    href={
+                      pathname === '/'
+                        ? item.href
+                        : `/?scrollTo=${item.href.replace('#', '')}`
+                    }
+                    scroll={false}
+                    className={`text-sm hover:text-yellow cursor-pointer ${isActive ? 'text-yellow' : ''}`}
+                    onClick={e => {
+                      if (pathname === '/') {
+                        e.preventDefault();
+                        const targetId = item.href.replace('#', '') || 'home-section';
+                        handleSmoothScroll(targetId);
+                      }
+                      // If not on home, let Link handle navigation with scrollTo param
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           )}
 
@@ -223,24 +285,51 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
         </div>
 
         <nav className="flex flex-col p-4 gap-4">
-          {(isAdminArea ? [
-            { label: 'Dashboard', href: '/admin/dashboard' },
-            { label: 'Users', href: '/admin/users' },
-            { label: 'Orders', href: '/admin/orders' },
-            { label: 'Settings', href: '/admin/settings' }
-          ] : navItems).map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="text-sm hover:text-cyan-400"
-              onClick={(e) => {
-                handleNavClick(item, e);
-                setMobileMenuOpen(false);
-              }}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isPageLink = item.href === '/subscriptions';
+            let isActive = false;
+            if (isPageLink) {
+              isActive = pathname === '/subscriptions';
+            } else if (pathname === '/') {
+              const sectionId = item.href.replace('#', '') || 'home-section';
+              isActive = activeSection === sectionId;
+            }
+            if (item.label === 'Home' && pathname === '/' && activeSection === 'home-section') {
+              isActive = true;
+            }
+            return isPageLink ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`text-sm hover:text-yellow ${isActive ? 'text-yellow' : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <Link
+                key={item.label}
+                href={
+                  pathname === '/'
+                    ? item.href
+                    : `/?scrollTo=${item.href.replace('#', '')}`
+                }
+                scroll={false}
+                className={`text-sm hover:text-yellow cursor-pointer ${isActive ? 'text-yellow' : ''}`}
+                onClick={e => {
+                  if (pathname === '/') {
+                    e.preventDefault();
+                    const targetId = item.href.replace('#', '') || 'home-section';
+                    handleSmoothScroll(targetId);
+                    setMobileMenuOpen(false);
+                  }
+                  // If not on home, let Link handle navigation with scrollTo param
+                }}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {!isAdminArea && (

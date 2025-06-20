@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import PaymentModal from "../PaymentModal";
 import { useSession } from "next-auth/react";
-import { PRICING_TIERS, PricingTier } from "@/lib/constants";
+import { PRICING_TIERS, PricingTier, PRODUCTS } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 
 interface PricingSectionProps {

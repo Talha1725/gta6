@@ -102,6 +102,14 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
     };
   }, [mobileMenuOpen]);
 
+  // Close mobile sidebar on scroll
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleScroll = () => setMobileMenuOpen(false);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [mobileMenuOpen]);
+
   // Handle user count updates
   useEffect(() => {
     const updateUsers = () => {

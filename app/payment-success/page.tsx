@@ -19,30 +19,18 @@ const PaymentSuccessContent = () => {
   const payment_intent_client_secret = searchParams?.get("payment_intent_client_secret");
 
   useEffect(() => {
-    // Log all Stripe return parameters
-    console.log('🔄 Stripe Return Parameters:', {
-      payment_intent,
-      redirect_status,
-      error_message,
-      payment_intent_client_secret,
-      all_params: Object.fromEntries(searchParams?.entries() || [])
-    });
-
     // Handle different payment statuses
     if (redirect_status === "succeeded") {
-      console.log('✅ Payment succeeded:', { payment_intent, status: redirect_status });
       setPaymentStatus("success");
     } else if (redirect_status === "failed") {
       console.error('❌ Payment failed:', { payment_intent, status: redirect_status, error: error_message });
       setPaymentStatus("failed");
     } else if (redirect_status === "canceled") {
-      console.log('⚠️ Payment canceled:', { payment_intent, status: redirect_status });
       setPaymentStatus("canceled");
     } else if (error_message) {
       console.error('❌ Payment error:', { payment_intent, error: error_message });
       setPaymentStatus("failed");
     } else if (payment_intent) {
-      console.log('⏳ Processing payment:', { payment_intent, status: redirect_status });
       // For testing, we'll simulate success after a short delay
       const timer = setTimeout(() => {
         setPaymentStatus("success");

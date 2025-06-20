@@ -89,12 +89,3 @@ export async function fetchAllOrders(searchParams?: URLSearchParams) {
     }
   };
 }
-
-// New action: get pre-order(s) by email
-export async function getPreOrderByEmail(email: string) {
-  const rows = await db
-    .select()
-    .from(orders)
-    .where(and(eq(orders.purchaseType, 'pre_order'), eq(orders.customerEmail, email)));
-  return rows;
-}

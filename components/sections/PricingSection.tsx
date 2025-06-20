@@ -14,7 +14,6 @@ const PricingSection = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  console.log("data: session, status", session, status);
 
   const pricingTiers: PricingTier[] = PRICING_TIERS;
 
@@ -23,20 +22,12 @@ const PricingSection = () => {
       router.push('/login');
       return;
     }
-    console.log("🛍️ Starting purchase flow:", {
-      tier: tier.type,
-      amount: tier.price,
-      currency: tier.currency,
-      product: `${tier.type} - ${tier.leaks}`,
-      purchaseType: tier.purchaseType,
-      totalLeaks: tier.totalLeaks
-    });
+   
     setSelectedTier(tier);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    console.log("❌ Payment modal closed");
     setShowModal(false);
     setSelectedTier(null);
   };
@@ -49,7 +40,6 @@ const PricingSection = () => {
           // Get cookies from document.cookie for client-side
           const cookieHeader = document.cookie;
           const hasSubscription = await fetchLatestSubscriptionServer(cookieHeader);
-          console.log("hasActiveSubscription", hasSubscription);
           setHasActiveSubscription(hasSubscription);
         } catch (error) {
           console.error("Error checking subscription:", error);

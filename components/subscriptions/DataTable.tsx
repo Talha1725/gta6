@@ -35,7 +35,7 @@ const DataTable: React.FC<DataTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
+            {data?.map((item, index) => (
               <tr key={`${item.customerId}-${index}`} className="hover:bg-gray-700/20 transition-colors">
                 <td className="px-6 py-4 text-sm text-white">{item.plan}</td>
                 <td className="px-6 py-4 text-sm">
@@ -47,7 +47,7 @@ const DataTable: React.FC<DataTableProps> = ({
                   ${item.amount.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-400 font-mono">
-                  {item.customerId.length > 20 ? `${item.customerId.slice(0, 20)}...` : item.customerId}
+                  {item?.customerId?.length > 20 ? `${item?.customerId.slice(0, 20)}...` : item.customerId}
                 </td>
                 {currentType !== 'onetime' && (
                   <>
@@ -66,7 +66,7 @@ const DataTable: React.FC<DataTableProps> = ({
                             size="sm"
                             onClick={() => {
                               // Handle cancel subscription logic here
-                              console.log('Canceling subscription for:', item.customerId);
+                              console.log('Canceling subscription for:', item?.customerId);
                             }}
                           >
                             Cancel Plan

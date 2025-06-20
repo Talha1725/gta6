@@ -41,7 +41,7 @@ const CryptoSection: React.FC = () => {
             </h3>
             
             <div className="flex flex-col items-center mx-auto space-y-5">
-              <div className="flex items-center">
+              <div className="flex justify-center items-center">
                 <div className="w-3 h-3 rounded-full bg-yellow mr-3"></div>
                 <span className="text-white text-left font-spaceMono">Unlocks AI Leaks & Merch Discounts</span>
               </div>
@@ -52,7 +52,7 @@ const CryptoSection: React.FC = () => {
               </div>
               
               <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-yellow mr-3"></div>
+                <div className="min-w-3 h-3 rounded-full bg-yellow mr-3"></div>
                 <span className="text-white text-left font-spaceMono">Future In-Game Purchases (Pending Mod Integration)</span>
               </div>
             </div>
@@ -72,14 +72,6 @@ const CryptoSection: React.FC = () => {
                  Buy Neon6IX on Raydium
                 </Button>
                 </Link>
-
-                <Button
-                  variant="secondary"
-                  className="font-orbitron px-1 h-10 text-[17px]"
-                >
-                  STAKE FOR REWARDS
-                </Button>
-
           </div>
         </div>
       </div>

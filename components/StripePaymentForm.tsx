@@ -41,9 +41,7 @@ const PaymentFormContent: React.FC<Omit<StripePaymentFormProps, 'stripePromise'>
     setErrorMessage('');
 
     try {
-      if (paymentType === 'setup_intent') {
-        console.log('🔧 Confirming setup intent for subscription...');
-        
+      if (paymentType === 'setup_intent') {        
         // For subscriptions, use confirmSetup
         const { error } = await stripe.confirmSetup({
           elements,
@@ -58,9 +56,7 @@ const PaymentFormContent: React.FC<Omit<StripePaymentFormProps, 'stripePromise'>
           setIsLoading(false);
         }
         // On success, the page will redirect to return_url
-      } else {
-        console.log('💳 Confirming payment intent for one-time payment...');
-        
+      } else {        
         // For one-time payments, use confirmPayment
         const { error } = await stripe.confirmPayment({
           elements,

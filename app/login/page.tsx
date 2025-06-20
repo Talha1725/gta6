@@ -3,9 +3,9 @@ import { useState, Suspense } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { authService } from '@/lib/services'
 import { validationUtils } from '@/lib/utils/validation'
 import { USER_ROLES } from '@/lib/constants'
+import Router from 'next/router'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -70,7 +70,16 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900">
       <div className="bg-black/40 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8 shadow-2xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-white text-center mb-6">Sign In</h2>
+      <div className="items-center mb-6">
+      <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="px-4 py-2 text-white rounded transition"
+          >
+            ← Back
+          </button>
+          <h2 className="text-2xl font-bold text-center text-white">Sign In</h2>
+          </div>
         
         {success && (
           <div className="mb-4 p-3  text-green rounded">

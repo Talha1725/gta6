@@ -1,8 +1,8 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { preorder } from '@/lib/db/schema';
-import { desc, isNotNull } from 'drizzle-orm';
+import { orders, preorder } from '@/lib/db/schema';
+import { and, desc, eq, isNotNull } from 'drizzle-orm';
 
 // Server action to fetch all preorders
 export async function fetchAllPreorders() {
@@ -54,9 +54,15 @@ export async function fetchLatestPreorder() {
   const rows = await db
     .select()
     .from(preorder)
-    .where(isNotNull(preorder.releaseDate))
-    .orderBy(desc(preorder.releaseDate))
+    .orderBy(desc(preorder.createdAt))
     .limit(1);
-
   return rows[0] || null;
+}
+
+export async function getPreOrderByEmail(email: string) {
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.purchaseType, 'pre_order'), eq(orders.customerEmail, email)));
+  return rows;
 }

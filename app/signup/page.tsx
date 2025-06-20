@@ -65,8 +65,17 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900">
       <div className="bg-black/40 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8 shadow-2xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-white text-center mb-6">Sign Up</h2>
-        
+      <div className="items-center mb-6">
+      <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="px-4 py-2 text-white rounded transition"
+          >
+            ← Back
+          </button>
+          <h2 className="text-2xl font-bold text-center text-white">Sign Up</h2>
+          
+        </div>        
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Error message */}
           {error && (

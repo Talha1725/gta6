@@ -7,7 +7,8 @@ import { validationUtils } from '@/lib/utils/validation';
 import { API_ENDPOINTS, preorderPriceTier } from '@/lib/constants';
 import { useSession } from "next-auth/react";
 import PaymentModal from '../PaymentModal';
-import { getPreOrderByEmail } from '@/actions/order';
+import { getPreOrderByEmail } from '@/actions/preorder';
+import { useRouter } from "next/navigation";
 
 interface CountdownSectionProps {
   preorder: any;
@@ -34,7 +35,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
   const [showModal, setShowModal] = useState(false);
   const [isAlreadySubscribed, setIsAlreadySubscribed] = useState(false);
 
-
+  const router = useRouter();
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -93,7 +94,6 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
 
     if (!session?.user?.email) return;
     try {
-      console.log(session?.user?.email, '!session?.user?.email')
       const result = await getPreOrderByEmail(session?.user?.email);
       if (Array.isArray(result) && result.length > 0) {
         setIsAlreadySubscribed(true);
@@ -135,9 +135,7 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
     try {
       const response = await fetch(API_ENDPOINTS.subscriptions.subscribe, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail }),
       });
 
@@ -145,8 +143,11 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
 
       if (data.success) {
         setEmailSuccess(true);
-        // Open subscription modal for the subscription tier
-        setShowModal(true);
+        if (session?.user?.email) {
+          setShowModal(true);
+        } else {
+          router.push('/login');
+        }
       } else {
         setEmailError(data.error || 'Failed to subscribe. Please try again.');
       }

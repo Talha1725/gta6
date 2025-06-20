@@ -16,7 +16,6 @@ export async function fetchSubscriptionsServer(
     cache: 'no-store'
   });
 
-  console.log('res', res);
 
   if (!res.ok) throw new Error('Failed to fetch subscriptions');
 
@@ -26,7 +25,6 @@ export async function fetchSubscriptionsServer(
 export async function fetchLatestSubscriptionServer(cookieHeader: string): Promise<boolean> {
   try {
     const url = `${API_BASE_URL}/api/subscriptions?type=subscriptions&page=1&limit=1`;
-    // console.log('🔍 Fetching subscription from:', url);
     
     // Fetch the latest subscription with type=subscriptions, limit=1
     const response = await fetch(url, {
@@ -39,17 +37,14 @@ export async function fetchLatestSubscriptionServer(cookieHeader: string): Promi
     const data = await response.json();
     
     if (!data.success) {
-      // console.log('❌ API request not successful');
       return false;
     }
 
     if (!data.data || data.data.length === 0) {
-      // console.log('❌ No subscription data found');
       return false;
     }
 
     const subscription = data.data[0];
-    console.log('💳 Found subscription:', subscription);
     
     // Check if subscription is active and not expired
     const isActive = subscription.status === 'completed';
@@ -58,7 +53,6 @@ export async function fetchLatestSubscriptionServer(cookieHeader: string): Promi
     
  
     const result = isActive && endDate > now;
-    // console.log('✅ Final result:', result);
     
     return result;
   } catch (error) {

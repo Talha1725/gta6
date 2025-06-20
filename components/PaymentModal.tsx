@@ -67,8 +67,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           if (result.googlePay) methods.push("Google Pay");
           if (result.link) methods.push("Link");
           setAvailablePaymentMethods(methods);
-
-          console.log("Available payment methods:", result);
         } else {
           console.log(
             "No wallet payment methods available on this device/browser"
@@ -296,11 +294,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
           setClientSecret(response.clientSecret);
           
-          // Log order number if available (for debugging)
-          console.log('Payment intent response:', {
-            hasOrderNumber: !!response.orderNumber,
-            orderNumber: response.orderNumber
-          });
         } catch (err) {
           console.error("Error creating payment intent:", err);
           setError("Failed to initialize payment. Please try again.");

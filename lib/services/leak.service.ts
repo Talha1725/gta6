@@ -1,6 +1,6 @@
 import { LeakGenerationResponse } from "@/types";
 
-const API_BASE_URL = process.env.BASE_API_URL||'https://api.gta6.xnerds.co';
+const API_BASE_URL = process.env.BASE_API_URL||'https://api.gta6preorder.com';
 
 export async function generateLeak({
   keywords,

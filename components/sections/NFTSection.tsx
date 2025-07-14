@@ -28,19 +28,19 @@ const NFTSection: React.FC = () => {
     {
       id: 'standard',
       title: 'Standard NFT',
-      image: '/images/nft.png',
+      image: '/images/nft1.png',
       price: '$199'
     },
     {
       id: 'gold',
       title: 'Gold Edition',
-      image: '/images/nft.png',
+      image: '/images/nft1.png',
       price: '$499'
     },
     {
       id: 'diamond',
       title: 'Diamond Founder',
-      image: '/images/nft.png',
+      image: '/images/nft1.png',
       price: '$999',
       priceNote: 'ONLY 88 AVAILABLE',
       limited: true

@@ -340,6 +340,18 @@ body > div {
   animation: spin-slow 3s linear infinite;
 }
 
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 30s linear infinite;
+}
 
 .neonix-button {
   background: transparent;

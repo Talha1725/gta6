@@ -159,7 +159,19 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
     }
   };
 
-
+const preOrderUrls=[
+  { url: "https://amzn.to/3ImNcCw", title: "PS5 SLIM" },
+  { url: "https://amzn.to/4ers2PF", title: "PS5PRO DIGITAL EDITION" },
+  { url: "https://amzn.to/4kdBJm0", title: "XBOX SERIES X 1TB SSD" },
+  { url: "https://amzn.to/4lyQ6Tl", title: "XBOX SERIES 1TB GAMING CONSOLE + CONTROLLER" },
+  { url: "https://amzn.to/4eAxJes", title: "GTA6 custom ps5 controller" },
+  { url: "https://amzn.to/4ew5Ns2", title: "PS5 CONTROLLER" },
+  { url: "https://amzn.to/4exhoHu", title: "XBOX SERIES X/S" },
+  { url: "https://amzn.to/4nqHHmo", title: "GAMING HEADSETS" },
+  { url: "https://amzn.to/4nq3dIb", title: "CLAIR OBSURE 33 PS5" },
+  { url: "https://amzn.to/44kUMFe", title: "GRAND THEFT AUTO V GAME PS5" },
+  { url: "https://amzn.to/4l2x5Zj", title: "GRAND THEFT AUTO V XBOX" },
+]
   return (
     <section id='countdown-section' className="relative py-20 w-full flex items-center justify-center min-h-screen">
       {/* Background Image - Fixed positioning */}
@@ -179,8 +191,42 @@ const CountdownSection: React.FC<CountdownSectionProps> = ({ preorder }) => {
           {/* Title */}
           <h2 className="text-4xl md:text-6xl font-bold mb-8 text-pink-500 font-orbitron">
             Time Until GTA 6 Pre-Orders Open</h2>
-          <p className='text-white text-md font-spaceMono font-bold mt-4'><span className='text-yellow'>VIP Pre-Order Access ($9.99/MO) </span>– Early Access to Discounts & Bonuses</p>
 
+          {/* Amazon Product Marquee - Seamless Infinite Scroll */}
+          <div className="w-full overflow-x-hidden mb-8">
+            <div className="inline-flex flex-nowrap w-full">
+              <ul className="flex items-center space-x-4 animate-infinite-scroll">
+                {preOrderUrls.map((item, idx) => (
+                  <li key={idx} className="min-w-[300px]">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block bg-gradient-to-r from-cyan-400 to-pink-500 text-black font-bold px-6 py-2 rounded-full shadow-md hover:scale-105 transition-transform duration-300 text-sm md:text-base font-orbitron text-center"
+                    >
+                      {item.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <ul className="flex items-center space-x-4 animate-infinite-scroll" aria-hidden="true">
+                {preOrderUrls.map((item, idx) => (
+                  <li key={"dup-" + idx} className="min-w-[300px]">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block bg-gradient-to-r from-cyan-400 to-pink-500 text-black font-bold px-6 py-2 rounded-full shadow-md hover:scale-105 transition-transform duration-300 text-sm md:text-base font-orbitron text-center"
+                    >
+                      {item.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <p className='text-white text-md font-spaceMono font-bold mt-4'><span className='text-yellow'>VIP Pre-Order Access ($9.99/MO) </span>– Early Access to Discounts & Bonuses</p>
           {/* Countdown Timer */}
           <div className='p-4 rounded-2xl bg-black/40 mt-10 sm:w-[70%] lg:w-[40%] mx-auto'>
             <div className="mb-12">

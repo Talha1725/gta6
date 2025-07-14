@@ -16,37 +16,37 @@ const MerchSection: React.FC = () => {
     {
       id: "psycho-vibes",
       title: "Neon Drip Signal",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-staple-t-shirt-black-heather-front-680d74b610b5d.jpg?v=1746570261",
+      image: "/images/1.jpg",
       price: "$42",
     },
     {
-      id: "Synthwave Command",
+      id: "synthwave-command",
       title: "Synthwave Command",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-staple-t-shirt-black-heather-front-6804d47ff37f8.jpg?v=1746569073",
+      image: "/images/2.jpg",
       price: "$42",
     },
     {
-      id: "Glitched Access Gateway",
+      id: "glitched-access-gateway",
       title: "Glitched Access Gateway",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-staple-t-shirt-black-heather-front-6804d3534bcb4.jpg?v=1746568956",
+      image: "/images/3.jpg",
       price: "$42",
     },
     {
-      id: "Future Echoes Drop",
+      id: "future-echoes-drop",
       title: "Future Echoes Drop",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-staple-t-shirt-black-heather-front-6804d2049e806.jpg?v=1746569161",
+      image: "/images/4.jpg",
       price: "$42",
     },
     {
-      id: "Quantum Sync Pulse",
+      id: "quantum-sync-pulse",
       title: "Quantum Sync Pulse",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-staple-t-shirt-black-heather-front-6804d4f447342.jpg?v=1746569225",
+      image: "/images/5.jpg",
       price: "$42",
     },
     {
-      id: "Loading into Orbit",
+      id: "loading-into-orbit",
       title: "Loading into Orbit",
-      image: "https://cdn.shopify.com/s/files/1/0553/9912/0992/files/unisex-premium-hoodie-black-front-6804c90529f71.jpg?v=1746610971",
+      image: "/images/6.jpg",
       price: "$88",
       note: "PRE-ORDERS ONLY",
     },
@@ -76,15 +76,7 @@ const MerchSection: React.FC = () => {
             >
               {/* Merch Image - Fixed for Shopify images */}
               <div className="relative w-full overflow-hidden min-h-[15rem] p-3 md:p-4">
-                {item.image.startsWith('https://cdn.shopify.com') ? (
-                  /* Use regular img tag for Shopify images */
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="object-cover hover:scale-105 transition-transform h-full duration-300 w-full rounded-xl"
-                  />
-                ) : (
-                  /* Use Next.js Image for local images */
+                
                   <Image
                     src={item.image}
                     alt={item.title}
@@ -93,7 +85,6 @@ const MerchSection: React.FC = () => {
                     style={{ objectFit: "cover" }}
                     className="hover:scale-105 transition-transform duration-300 w-full h-full rounded-xl"
                   />
-                )}
               </div>
 
               {/* Merch Info - Balanced padding */}

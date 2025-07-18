@@ -16,7 +16,7 @@ const CryptoSection: React.FC = () => {
         <div className="flex flex-col items-center justify-center">
           {/* Coin Logo */}
           <div className="flex justify-center mb-10">
-            <div className="relative w-28 h-28 md:w-32 md:h-32">
+            <Link href={'http://gta6ecosystem.com/'} target='blank' className="relative w-28 h-28 md:w-32 md:h-32">
               <Image
                 src="/images/logo.svg" 
                 alt="Neonix Coin"
@@ -25,7 +25,7 @@ const CryptoSection: React.FC = () => {
                 style={{ objectFit: 'contain' }}
                 priority
               />
-            </div>
+            </Link>
           </div>
           
           {/* Main Heading */}

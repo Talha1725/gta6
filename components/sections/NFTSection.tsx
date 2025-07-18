@@ -146,7 +146,7 @@ const NFTSection: React.FC = () => {
                   alt={card.title}
                   width={400}
                   height={100}
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full object-fit rounded"
                 />
                 
                 {/* Limited Supply Badge */}

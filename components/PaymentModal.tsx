@@ -313,7 +313,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
       <div className="relative bg-gray-900/95 backdrop-blur-lg border border-gray-800/50 rounded-xl p-6 w-full max-w-md mx-auto max-h-[90vh] md:max-h-[82vh] overflow-y-auto custom-scrollbar">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-bold text-white">Complete Purchase</h2>
           <button
             onClick={onClose}
@@ -324,6 +324,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             </svg>
           </button>
         </div>
+        <p style={{fontSize: "12px", color: "#999"}} className="mb-3">
+            <span role="img" aria-label="octagonal_sign">🚨</span> By checking out, you acknowledge this is a fan-made parody and not affiliated with Rockstar Games or Take‑Two Interactive. You’re buying satire — not software.
+          </p>
 
         {loading ? (
           <div className="flex items-center justify-center py-8">

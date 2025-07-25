@@ -366,6 +366,9 @@ const Navigation: React.FC<NavigationProps> = ({ className }) => {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
+      <p style={{fontSize: "14px", color: "#999", textAlign: "center"}}>
+        <span role="img" aria-label="alarm">🚨</span>This is NOT the official GTA 6 site — but it might be better. Parody protected. Merch legendary.
+      </p>
     </header>
   );
 };
